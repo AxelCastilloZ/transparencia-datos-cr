@@ -3,10 +3,12 @@ import { api, type DatoMensual, type EstadisticaPolicial, type ResumenDelito } f
 import { CantonSelector } from './components/CantonSelector';
 import { DataTable } from './components/DataTable';
 import { DelitosChart } from './components/DelitosChart';
+import { SicopPanel } from './components/SicopPanel';
 import { TimelineChart } from './components/TimelineChart';
 
 function App() {
   const [canton, setCanton] = useState('');
+  const [cantonNombre, setCantonNombre] = useState('');
   const [resumen, setResumen] = useState<ResumenDelito[]>([]);
   const [registros, setRegistros] = useState<EstadisticaPolicial[]>([]);
   const [mensual, setMensual] = useState<DatoMensual[]>([]);
@@ -19,8 +21,9 @@ function App() {
   }, []);
 
   // Cargar datos cuando cambia el cantón seleccionado
-  const cargarDatos = useCallback(async (codigo: string) => {
+  const cargarDatos = useCallback(async (codigo: string, nombre = '') => {
     setCanton(codigo);
+    setCantonNombre(nombre);
     if (!codigo) {
       setResumen([]);
       setRegistros([]);
@@ -55,7 +58,8 @@ function App() {
             🇨🇷 Transparencia CR
           </h1>
           <p className="mt-1 text-gray-500">
-            Explorador de datos públicos por cantón — Estadísticas Policiales (OIJ)
+            Explorador de datos públicos de Costa Rica — seguridad (OIJ) y
+            contratación pública (SICOP)
           </p>
         </div>
       </header>
@@ -80,7 +84,7 @@ function App() {
           </div>
         )}
 
-        {/* Dashboard del cantón */}
+        {/* Sección: Seguridad (OIJ) */}
         {canton && (
           <div className="space-y-6">
             {/* Stat cards */}
@@ -130,6 +134,11 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Sección: Contratación pública (SICOP) — nacional o por cantón */}
+        <section className="mt-12 pt-8 border-t border-gray-200">
+          <SicopPanel canton={canton || undefined} cantonNombre={cantonNombre || undefined} />
+        </section>
       </main>
 
       {/* Footer */}

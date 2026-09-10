@@ -35,7 +35,7 @@ export function TimelineChart({ data, loading }: Props) {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
         <YAxis />
-        <Tooltip formatter={(value: number) => [value.toLocaleString(), 'Incidentes']} />
+        <Tooltip formatter={(value) => [Number(value).toLocaleString(), 'Incidentes']} />
         <Area
           type="monotone"
           dataKey="casos"

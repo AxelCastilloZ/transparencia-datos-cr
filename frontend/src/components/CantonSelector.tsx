@@ -3,7 +3,7 @@ import { api, type Canton } from '../api';
 
 interface Props {
   value: string;
-  onChange: (codigo: string) => void;
+  onChange: (codigo: string, nombre: string) => void;
 }
 
 /** Selector de cantón agrupado por provincia */
@@ -27,7 +27,12 @@ export function CantonSelector({ value, onChange }: Props) {
   return (
     <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) =>
+        onChange(
+          e.target.value,
+          e.target.selectedOptions[0]?.text ?? '',
+        )
+      }
       disabled={loading}
       className="w-full max-w-md px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900
                  text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500

@@ -36,8 +36,8 @@ export function DelitosChart({ data, loading }: Props) {
         <XAxis type="number" />
         <YAxis type="category" dataKey="nombre" width={220} tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number) => [value.toLocaleString(), 'Casos']}
-          labelFormatter={(label: string) => label}
+          formatter={(value) => [Number(value).toLocaleString(), 'Casos']}
+          labelFormatter={(label) => String(label)}
         />
         <Bar dataKey="total" fill="#3b82f6" radius={[0, 4, 4, 0]} />
       </BarChart>

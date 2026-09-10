@@ -22,7 +22,7 @@ expone los datos como API propia.
 | # | Fuente | Responsable | Estado |
 |---|--------|-------------|--------|
 | 1 | **Poder Judicial / OIJ** — Estadísticas Policiales | Axel ([@AxelCastilloZ](https://github.com/AxelCastilloZ)) | ✅ Completo |
-| 2 | **SICOP** — Contratación Pública | Persona 2 | ⏳ Pendiente |
+| 2 | **SICOP** — Contratación Pública | Brenda Obando ([@BrendaObando](https://github.com/BrendaObando)) | ✅ Completo |
 | 3 | **TSE** — Padrón Electoral | Persona 3 | ⏳ Pendiente |
 | 4 | **Portal Nacional de Datos Abiertos** | Persona 4 | ⏳ Pendiente |
 
@@ -38,7 +38,7 @@ expone los datos como API propia.
 │  Backend (NestJS)                                    │
 │  ┌───────────┐ ┌───────────┐ ┌──────┐ ┌──────────┐ │
 │  │ judicial/  │ │  sicop/   │ │ tse/ │ │datos-ab/ │ │
-│  │ (OIJ) ✅  │ │           │ │      │ │          │ │
+│  │ (OIJ) ✅  │ │  ✅      │ │      │ │          │ │
 │  └─────┬─────┘ └─────┬─────┘ └──┬───┘ └────┬─────┘ │
 │        └──────────────┴──────────┴──────────┘       │
 │                       │ TypeORM                      │
@@ -46,7 +46,8 @@ expone los datos como API propia.
                         │ SQL (Session pooler IPv4)
 ┌───────────────────────▼─────────────────────────────┐
 │  PostgreSQL (Supabase)                               │
-│  cantones | estadistica_policial | sicop | tse | ... │
+│  cantones | estadisticas_policiales |                │
+│  sicop_ordenes_pedido | ...                          │
 └─────────────────────────────────────────────────────┘
 
 Cron jobs (por módulo) descargan datos periódicamente.
@@ -115,6 +116,20 @@ curl -X POST http://localhost:3000/api/judicial/sync
 Esto descarga ~100,000+ registros de estadísticas policiales (2024–2026).
 Tarda ~1 minuto. Después se refresca automáticamente cada semana vía cron.
 
+### Primera carga de datos (SICOP)
+
+```bash
+# Carga los últimos 6 meses de órdenes de pedido de SICOP
+curl -X POST http://localhost:3000/api/sicop/sync
+
+# O meses puntuales (más rápido para una demo)
+curl -X POST "http://localhost:3000/api/sicop/sync?meses=202608,202607,202606"
+```
+
+Descarga los ZIP mensuales del Observatorio de Compra Pública, extrae las
+órdenes de pedido y les resuelve la institución/cantón. ~80.000 órdenes en
+6 meses, tarda 2–4 minutos. Se refresca a diario vía cron.
+
 ## Endpoints disponibles
 
 ### Cantones (compartido)
@@ -162,7 +177,50 @@ curl http://localhost:3000/api/judicial/canton/101/mensual
 ]
 ```
 
-### SICOP ⏳ · TSE ⏳ · Datos Abiertos ⏳
+### SICOP — Contratación Pública ✅
+
+Órdenes de pedido de instituciones públicas (compras ejecutadas). Detalle
+del módulo y diccionario de datos: `backend/src/sicop/README.md` y `DATOS.md`.
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/sicop/status` | Total de órdenes + cuántas con cantón resuelto |
+| GET | `/api/sicop/proveedores` | Ranking de proveedores por monto (query: `q`, `desde`, `hasta`, `limit`, `canton`) |
+| GET | `/api/sicop/instituciones` | Ranking de instituciones compradoras (query: `desde`, `hasta`, `limit`, `canton`) |
+| GET | `/api/sicop/mensual` | Gasto agregado por mes (query: `desde`, `hasta`, `canton`) |
+| GET | `/api/sicop/canton/:codigo` | Órdenes de instituciones de un cantón |
+| GET | `/api/sicop/canton/:codigo/instituciones` | Instituciones compradoras del cantón |
+| GET | `/api/sicop/canton/:codigo/mensual` | Gasto por mes del cantón |
+| POST | `/api/sicop/sync` | Ingesta manual (query: `meses=202608,202607`) |
+
+**Ejemplo de request/response:**
+
+```bash
+# Top proveedores por monto contratado
+curl "http://localhost:3000/api/sicop/proveedores?limit=3"
+```
+
+```json
+[
+  { "proveedor": "CORPORACION GONZALEZ Y ASOCIADOS INTERNACIONAL SOCIEDAD ANONIMA", "total": 46980134314.0, "ordenes": 141 },
+  { "proveedor": "INS RED DE SERVICIOS DE SALUD SOCIEDAD ANONIMA", "total": 31384355659.0, "ordenes": 14 },
+  { "proveedor": "INSTITUTO NACIONAL DE SEGUROS", "total": 10077026556.0, "ordenes": 225 }
+]
+```
+
+```bash
+# Gasto mensual en órdenes de pedido para un cantón (ej: 701 = Limón)
+curl "http://localhost:3000/api/sicop/canton/701/mensual"
+```
+
+```json
+[
+  { "mes": "2026-04", "monto": 2314500000.0, "ordenes": 210 },
+  { "mes": "2026-05", "monto": 1980300000.0, "ordenes": 231 }
+]
+```
+
+### TSE ⏳ · Datos Abiertos ⏳
 
 Pendientes — cada integrante expondrá sus endpoints siguiendo el mismo
 patrón (`/api/<fuente>/canton/:codigo`).
@@ -172,7 +230,7 @@ patrón (`/api/<fuente>/canton/:codigo`).
 | Fuente | URL | Formato | Frecuencia |
 |--------|-----|---------|------------|
 | OIJ — Estadísticas Policiales | [datosabiertospj.poder-judicial.go.cr](https://datosabiertospj.poder-judicial.go.cr/dataset/estadisticas-policiales) | CSV (sin headers, 11 columnas) | Mensual |
-| SICOP — Contratación Pública | [sicop.go.cr](https://www.sicop.go.cr/moduloPcont/pcont/rp/CE_MOD_DATOSABIERTOSVIEW.jsp) | JSON/CSV/Excel | Diaria (~24h desfase) |
+| SICOP — Contratación Pública | Fuente: [SICOP](https://www.sicop.go.cr/moduloPcont/pcont/rp/CE_MOD_DATOSABIERTOSVIEW.jsp) · Vía de acceso: [Observatorio de Compra Pública](https://www.observatoriocomprapublica.go.cr/descargas-sicop/) (`.../Zip/AAAAMM.zip`) | ZIP mensual de CSV (`;`, UTF-8) | Diaria 08:00 (~24 h desfase) |
 | TSE — Padrón Electoral | [tse.go.cr/descarga_padron.html](https://www.tse.go.cr/descarga_padron.html) | ZIP (TXT Latin-1) | Mensual |
 | Datos Abiertos CR | [datosabiertos.gob.go.cr](https://datosabiertos.gob.go.cr/) | Varía por dataset | Varía |
 

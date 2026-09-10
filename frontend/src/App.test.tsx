@@ -33,8 +33,10 @@ describe('App', () => {
 
   it('muestra el conteo total de registros', async () => {
     render(<App />);
-    // Esperar a que se resuelva el fetch de status
-    const stat = await screen.findByText('103,875');
+    // Esperar a que se resuelva el fetch de status.
+    // El separador de miles depende del locale/ICU del entorno (coma, espacio
+    // o espacio fino), así que se acepta cualquier separador entre los grupos.
+    const stat = await screen.findByText(/103\D?875/);
     expect(stat).toBeInTheDocument();
   });
 });

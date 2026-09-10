@@ -1,66 +1,67 @@
 # Módulo: sicop — Datos Abiertos de Contratación Pública
 
-Fuente OSINT del proyecto (AGENTS.md §6.2). Responsable: persona 2.
+Fuente OSINT #2 (`AGENTS.md` §6.2). Responsable: **Brenda Obando**.
 
-## Estado
+- **Avance y checklist:** `PROGRESO.md`
+- **Diccionario de datos y decisiones de la fuente:** `DATOS.md`
+- **Guion de exposición:** `EXPOSICION.md`
 
-Esqueleto listo siguiendo el patrón de AGENTS.md §5 (entity + service +
-controller + module + cron). **Falta la parte de investigación**: definir de
-dónde y cómo se descargan los datos, y completar el parser.
+## Qué hace
 
-| Pieza | Archivo | Estado |
-|-------|---------|--------|
-| Entidad | `contratacion.entity.ts` | ✅ definida (revisar columnas al conocer la fuente) |
-| Service | `sicop.service.ts` | ⏳ falta `SICOP_SOURCE_URL` y `parsearReporte()` |
-| Controller | `sicop.controller.ts` | ✅ endpoints listos |
-| Module | `sicop.module.ts` | ✅ registrado en `app.module.ts` |
-| Cron | `sicop.service.ts` `@Cron(EVERY_DAY_AT_4AM)` | ✅ (diario, la fuente desfasa ~24 h) |
+Descarga las **órdenes de pedido** de SICOP (compras públicas ejecutadas) desde
+la zona de descarga masiva del Observatorio de Compra Pública (ZIP mensual de
+CSV que replica SICOP), las normaliza, **les resuelve la institución compradora
+y su cantón**, y las expone como API propia.
 
-Endpoints ya mapeados (devuelven vacío hasta cargar datos):
+```
+Observatorio (ZIP/AAAAMM.zip) → axios → fflate (unzip)
+   ├─ OrdenPedido.csv                → hechos (proveedor, monto, fecha)
+   └─ Instituciones + Sistemas/Carteles/Contratos → cruce NRO_SICOP → cantón
+   → papaparse (;) → normalización → tabla sicop_ordenes_pedido (TypeORM)
+   → /api/sicop/*
+```
 
-- `GET  /api/sicop/status`
-- `GET  /api/sicop/canton/:codigo` — `?desde&hasta&limit&offset`
-- `GET  /api/sicop/canton/:codigo/resumen` — monto por institución
-- `GET  /api/sicop/canton/:codigo/mensual` — monto por mes
-- `POST /api/sicop/sync` — dispara la ingesta manual
+Cron diario a las 4 a.m. Si el ZIP no está disponible, se conserva el último
+dato cacheado. El cruce por cantón cubre ~31 % de las órdenes (ver `DATOS.md` §3).
 
-## Checklist de investigación
+## Endpoints
 
-1. **Elegir el reporte.** Portal:
-   <https://www.sicop.go.cr/moduloPcont/pcont/rp/CE_MOD_DATOSABIERTOSVIEW.jsp>
-   (módulo nuevo: <https://www.sicop.go.cr/app/module/pcont/public/ce-open-data>).
-   Reportes disponibles: solicitudes de contratación, pliegos, aclaraciones,
-   recursos, ofertas, **adjudicaciones**, **contratos**, órdenes de pedido,
-   instituciones compradoras, proveedores, catálogo de bienes/servicios.
-   Para el cruce por cantón conviene uno con institución + monto + fecha.
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/sicop/status` | Total de órdenes + cuántas con cantón resuelto |
+| GET | `/api/sicop/proveedores` | Ranking de proveedores por monto. Query: `q`, `desde`, `hasta`, `limit`, `canton` |
+| GET | `/api/sicop/instituciones` | Ranking de instituciones compradoras. Query: `desde`, `hasta`, `limit`, `canton` |
+| GET | `/api/sicop/mensual` | Gasto agregado por mes. Query: `desde`, `hasta`, `canton` |
+| GET | `/api/sicop/canton/:codigo` | Órdenes de instituciones de un cantón |
+| GET | `/api/sicop/canton/:codigo/mensual` | Gasto por mes del cantón |
+| GET | `/api/sicop/canton/:codigo/instituciones` | Instituciones compradoras del cantón |
+| POST | `/api/sicop/sync` | Ingesta manual. Query: `meses=202601,202512` (opcional) |
 
-2. **Capturar la descarga.** Abrir DevTools → pestaña Network, aplicar filtros
-   (fecha / institución / provincia) y pulsar "Exportar" en JSON. Anotar:
-   URL real, método, parámetros (querystring o body), headers necesarios.
-   Preferir **JSON** sobre Excel. Pegar ese endpoint en `SICOP_SOURCE_URL`.
+## Primera carga (para la demo)
 
-3. **Alternativa a evaluar:** el Observatorio de Compra Pública republica los
-   datos de SICOP como ZIP mensual de CSV:
-   `https://dlsaobservatorioprod.blob.core.windows.net/fs-synapse-observatorio-produccion/Zip/AAAAMM.zip`
-   (<https://www.observatoriocomprapublica.go.cr/descargas-sicop/>). Si se usa,
-   citar SICOP como fuente primaria y el Observatorio como vía de acceso.
+```bash
+# Cargar meses puntuales
+curl -X POST "http://localhost:3000/api/sicop/sync?meses=202601,202512,202511"
 
-4. **Mapear columnas → `Contratacion`** y completar `parsearReporte()`.
-   Resolver el cantón: si la fuente da provincia+cantón en texto, usar el mapa
-   `construirMapaCantones()` (ya normaliza tildes/mayúsculas); si solo da
-   provincia, dejar `cantonCodigo = null` y el registro sigue sirviendo para
-   totales nacionales/por institución.
+# O dejar que cargue los últimos 6 meses
+curl -X POST http://localhost:3000/api/sicop/sync
+```
 
-5. **Probar la ingesta:** `curl -X POST http://localhost:3000/api/sicop/sync`
-   y luego `GET /api/sicop/status`.
+```bash
+curl "http://localhost:3000/api/sicop/proveedores?limit=10"
+curl "http://localhost:3000/api/sicop/mensual"
+```
 
-6. **Documentar en el README raíz** (§ "Fuentes de datos" y "Endpoints"):
-   endpoint/archivo usado, formato, frecuencia de publicación, y los caveats
-   de SICOP (réplica con ~24 h de desfase; proveedores excluye los últimos 7
-   días).
+## Estructura
 
-## Notas
+| Archivo | Qué es |
+|---|---|
+| `sicop.service.ts` | descarga ZIP, parseo, normalización, cruce por cantón, cron |
+| `sicop.parsers.ts` | funciones puras de parseo (montos, fechas, zona geográfica) |
+| `sicop.parsers.spec.ts` | tests de las funciones de parseo |
+| `contratacion.entity.ts` | entidad `sicop_ordenes_pedido` (FK a `cantones`) |
+| `sicop.controller.ts` | endpoints REST de solo lectura |
 
-- Sin login ni token: descarga pública.
-- No inventar convenciones nuevas: seguir `backend/src/judicial/` como molde.
-- El frontend consume solo `/api/sicop/*`, nunca SICOP directamente.
+## Pendiente
+
+Solo queda abrir el PR `feature/sicop` → repo del equipo. Ver `PROGRESO.md` §5.
