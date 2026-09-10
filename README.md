@@ -84,13 +84,24 @@ cp backend/.env.example backend/.env
 ### Arrancar en desarrollo
 
 ```bash
-# Opción 1: ambos a la vez desde la raíz
+# Opción 1: ambos a la vez desde la raíz (usa concurrently)
 pnpm run dev
 
 # Opción 2: por separado
 cd backend && pnpm run start:dev   # API en http://localhost:3000
 cd frontend && pnpm run dev        # App en http://localhost:5173
 ```
+
+Si un arranque anterior quedó colgado y ves `EADDRINUSE :::3000`, liberá los
+puertos: `npx kill-port 3000 5173`.
+
+### Nota sobre la versión de Node
+
+El CLI de NestJS falla con `ERR_REQUIRE_CYCLE_MODULE` en Node ≥ 20.19 / 23
+porque `@angular-devkit/schematics` hace `require()` de `ora` (que ahora es
+ESM). El repo fija `ora` a su última versión CommonJS vía `overrides` en
+`pnpm-workspace.yaml`, así que basta con `pnpm install`. Lo ideal igual es
+usar **Node 20 LTS**.
 
 ### Primera carga de datos (OIJ)
 

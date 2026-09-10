@@ -8,6 +8,8 @@ import { Canton } from './cantones/canton.entity.js';
 import { CantonesModule } from './cantones/cantones.module.js';
 import { EstadisticaPolicial } from './judicial/estadistica-policial.entity.js';
 import { JudicialModule } from './judicial/judicial.module.js';
+import { Contratacion } from './sicop/contratacion.entity.js';
+import { SicopModule } from './sicop/sicop.module.js';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { JudicialModule } from './judicial/judicial.module.js';
     ScheduleModule.forRoot(),
     CantonesModule,
     JudicialModule,
+    SicopModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -22,7 +25,7 @@ import { JudicialModule } from './judicial/judicial.module.js';
         type: 'postgres',
         url: config.getOrThrow<string>('DATABASE_URL'),
         ssl: { rejectUnauthorized: false },
-        entities: [Canton, EstadisticaPolicial],
+        entities: [Canton, EstadisticaPolicial, Contratacion],
         autoLoadEntities: true,
         synchronize: process.env.NODE_ENV !== 'production',
       }),

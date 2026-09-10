@@ -1,3 +1,9 @@
 packages:
   - "backend"
   - "frontend"
+
+# ora@9 es ESM-only y rompe el CLI de NestJS (@angular-devkit/schematics lo
+# hace require()) bajo Node >= 20.19 / 23 con ERR_REQUIRE_CYCLE_MODULE.
+# Forzamos la ultima version CommonJS de ora. Inofensivo en Node 20 LTS.
+overrides:
+  ora: "5.4.1"
