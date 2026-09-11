@@ -68,11 +68,6 @@ export function TsePanel({
       <h2 className="text-xl font-semibold text-gray-900">
         Padrón electoral — TSE{cantonNombre ? ` · ${cantonNombre}` : ''}
       </h2>
-      {onCantonChange && <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-700">Seleccioná un cantón para consultar el padrón:</p>
-        <CantonSelector value={canton ?? ''} onChange={onCantonChange} label="Cantón del padrón electoral" />
-        <p className="text-sm text-gray-500">Esta selección también actualiza los paneles de seguridad y contratación.</p>
-      </div>}
       <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
         El padrón electoral cuenta electores inscritos: no equivale a
         participación, abstencionismo ni votos emitidos. PADRON.TXT no contiene
