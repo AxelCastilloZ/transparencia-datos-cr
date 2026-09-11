@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { CantonSelector } from './CantonSelector';
 import {
   LineChart,
   Line,
@@ -19,7 +18,6 @@ import {
 export function TsePanel({
   canton,
   cantonNombre,
-  onCantonChange,
 }: {
   canton?: string;
   cantonNombre?: string;
