@@ -11,6 +11,7 @@ import { JudicialModule } from './judicial/judicial.module.js';
 import { Contratacion } from './sicop/contratacion.entity.js';
 import { SicopModule } from './sicop/sicop.module.js';
 import { DatosAbiertosModule } from './datos-abiertos/datos-abiertos.module.js';
+import { TseModule } from './tse/tse.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DatosAbiertosModule } from './datos-abiertos/datos-abiertos.module.js';
     JudicialModule,
     SicopModule,
     DatosAbiertosModule,
+    TseModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

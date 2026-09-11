@@ -1,7 +1,7 @@
 # 🇨🇷 Transparencia CR
 
 Explorador de Transparencia por Cantón — sistema web que cruza seguridad,
-contratación pública, participación electoral y datos abiertos de Costa Rica,
+contratación pública, padrón electoral y datos abiertos de Costa Rica,
 indexados por cantón.
 
 Proyecto universitario · 4 integrantes · Curso 2026
@@ -11,7 +11,7 @@ Proyecto universitario · 4 integrantes · Curso 2026
 Los datos públicos de Costa Rica están dispersos en múltiples portales
 (Poder Judicial, SICOP, TSE, Datos Abiertos). Este sistema los integra en
 un solo lugar, permitiendo que cualquier persona seleccione un cantón y vea
-las cuatro dimensiones a la vez: seguridad, contratación, participación
+las cuatro dimensiones a la vez: seguridad, contratación, padrón
 electoral y datos abiertos generales.
 
 No es un enlace ni un iframe a otra web — el backend descarga, procesa y
@@ -23,8 +23,8 @@ expone los datos como API propia.
 |---|--------|-------------|--------|
 | 1 | **Poder Judicial / OIJ** — Estadísticas Policiales | Axel ([@AxelCastilloZ](https://github.com/AxelCastilloZ)) | ✅ Completo |
 | 2 | **SICOP** — Contratación Pública | Brenda Obando ([@BrendaObando](https://github.com/BrendaObando)) | ✅ Completo |
-| 3 | **TSE** — Padrón Electoral | Persona 3 | ⏳ Pendiente |
-| 4 | **Portal Nacional de Datos Abiertos** | Persona 4 | ⏳ Pendiente |
+| 3 | **TSE** — Padrón Electoral | Jose Daniel R ([@Jroman07](https://github.com/Jroman07)) | ✅ ZIP/TXT, snapshots y panel implementados |
+| 4 | **Portal Nacional de Datos Abiertos** — PRONAE (MTSS) | Persona 4 | ✅ Implementado |
 
 ## Arquitectura
 
@@ -38,7 +38,7 @@ expone los datos como API propia.
 │  Backend (NestJS)                                    │
 │  ┌───────────┐ ┌───────────┐ ┌──────┐ ┌──────────┐ │
 │  │ judicial/  │ │  sicop/   │ │ tse/ │ │datos-ab/ │ │
-│  │ (OIJ) ✅  │ │  ✅      │ │      │ │          │ │
+│  │ (OIJ) ✅  │ │  ✅      │ │  ✅  │ │ PRONAE ✅│ │
 │  └─────┬─────┘ └─────┬─────┘ └──┬───┘ └────┬─────┘ │
 │        └──────────────┴──────────┴──────────┘       │
 │                       │ TypeORM                      │
@@ -107,7 +107,7 @@ usar **Node 20 LTS**.
 ### Primera carga de datos (OIJ)
 
 La primera vez que arranques el backend, la tabla de cantones se llena
-automáticamente (82 cantones). Para cargar los datos del OIJ:
+automáticamente (84 cantones). Para cargar los datos del OIJ:
 
 ```bash
 curl -X POST http://localhost:3000/api/judicial/sync
@@ -136,7 +136,7 @@ Descarga los ZIP mensuales del Observatorio de Compra Pública, extrae las
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/cantones` | Lista los 82 cantones agrupables por provincia |
+| GET | `/api/cantones` | Lista los 84 cantones agrupables por provincia |
 | GET | `/api/cantones/:codigo` | Detalle de un cantón (ej: `101` = San José) |
 
 ### Judicial / OIJ ✅
@@ -220,10 +220,63 @@ curl "http://localhost:3000/api/sicop/canton/701/mensual"
 ]
 ```
 
-### TSE ⏳ · Datos Abiertos ⏳
+### TSE — Padrón electoral
 
-Pendientes — cada integrante expondrá sus endpoints siguiendo el mismo
-patrón (`/api/<fuente>/canton/:codigo`).
+Responsable: **Jose Daniel R (@Jroman07)**. Backend: axios descarga el ZIP
+nacional oficial a una carpeta temporal; unzipper lee TXT por streaming,
+valida integridad y agrega electores por cantón y distrito usando DISTELEC.TXT.
+No guarda nombres, apellidos, cédulas, juntas ni caducidades. El ZIP temporal
+se elimina en finally. Las claves incluyen fecha de corte y la transacción
+con upsert conserva snapshots anteriores. Cron mensual: día 10 a las 04:00 CR.
+
+Primera sincronización (espera a terminar; puede tardar varios minutos):
+
+```bash
+curl -X POST http://localhost:3000/api/tse/sync
+```
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/tse/status` | Corte, snapshots y estado de ingesta |
+| GET | `/api/tse/resumen` | Total nacional territorial |
+| GET | `/api/tse/canton/:codigo` | Electores y porcentaje nacional |
+| GET | `/api/tse/canton/:codigo/historico` | Snapshots disponibles |
+| GET | `/api/tse/canton/:codigo/distritos` | Distritos electorales del último corte |
+| POST | `/api/tse/sync` | Primera carga o actualización manual |
+
+Ejemplo **sintético**, no cifras reales:
+
+```bash
+curl http://localhost:3000/api/tse/canton/612
+```
+
+```json
+{"fuente":"https://www.tse.go.cr/descarga_padron.html","fechaCorte":"2026-08-31","cantonCodigo":"612","total":100,"totalNacional":1000,"porcentajeNacional":10,"alcance":"Electores inscritos en los 84 cantones; excluye electores en el extranjero."}
+```
+
+Sin carga previa: fechaCorte null y conteos cero; históricos y distritos vacíos.
+Si falla la fuente, se conservan snapshots y sync devuelve 503 genérico.
+La fecha de corte viene del portal oficial, no del día de ingesta. El ZIP
+actual no permite reconstruir meses anteriores: la historia se acumula.
+Si el portal devuelve CAPTCHA a axios, configurar juntos TSE_FECHA_CORTE y
+TSE_ZIP_SHA256 en backend/.env tras verificar el corte y hash del ZIP oficial;
+ver el procedimiento en la documentación TSE. Un cambio de ZIP hace fallar
+la carga hasta actualizar esa configuración, conservando los snapshots.
+
+**PADRON.TXT no contiene sexo, nacimiento ni edad.** La integración del reporte
+estadístico agregado por sexo queda para una segunda fase; no se simula.
+Padrón significa electores inscritos, no participación, abstencionismo ni votos.
+El porcentaje nacional excluye electores en el extranjero. Los distritos son
+electorales, no necesariamente administrativos. Más detalles en
+[documentación TSE](backend/src/tse/README.md) y [diccionario](backend/src/tse/DATOS.md).
+
+### Datos Abiertos — PRONAE (MTSS) ✅
+
+Ya implementado: descarga XLSX oficial, transforma beneficiarios por modalidad
+y año (2021–2024), persiste y sirve un panel nacional independiente del cantón.
+Cron mensual. Primera carga: `POST /api/datos-abiertos/sync`.
+Consultas: `GET /api/datos-abiertos/status`, `/api/datos-abiertos/pronae?anio=2024`,
+`/api/datos-abiertos/pronae/anual` y `/api/datos-abiertos/pronae/resumen`.
 
 ## Fuentes de datos
 
@@ -232,7 +285,7 @@ patrón (`/api/<fuente>/canton/:codigo`).
 | OIJ — Estadísticas Policiales | [datosabiertospj.poder-judicial.go.cr](https://datosabiertospj.poder-judicial.go.cr/dataset/estadisticas-policiales) | CSV (sin headers, 11 columnas) | Mensual |
 | SICOP — Contratación Pública | Fuente: [SICOP](https://www.sicop.go.cr/moduloPcont/pcont/rp/CE_MOD_DATOSABIERTOSVIEW.jsp) · Vía de acceso: [Observatorio de Compra Pública](https://www.observatoriocomprapublica.go.cr/descargas-sicop/) (`.../Zip/AAAAMM.zip`) | ZIP mensual de CSV (`;`, UTF-8) | Diaria 08:00 (~24 h desfase) |
 | TSE — Padrón Electoral | [tse.go.cr/descarga_padron.html](https://www.tse.go.cr/descarga_padron.html) | ZIP (TXT Latin-1) | Mensual |
-| Datos Abiertos CR | [datosabiertos.gob.go.cr](https://datosabiertos.gob.go.cr/) | Varía por dataset | Varía |
+| Datos Abiertos CR — PRONAE (MTSS) | [datosabiertos.gob.go.cr](https://datosabiertos.gob.go.cr/) | XLSX, beneficiarios por modalidad y año (2021–2024) | Cron mensual |
 
 ## Para compañeros: cómo agregar tu módulo
 
@@ -254,4 +307,4 @@ arrancar el backend (`synchronize: true` en desarrollo).
 - ✅ No hay tokens, credenciales ni API keys en el repositorio.
 - ✅ `.env` está en `.gitignore`.
 - ✅ El módulo de TSE **nunca debe guardar datos personales** (nombre, cédula).
-  Solo conteos agregados por cantón/sexo/grupo etario.
+  Solo conteos agregados por cantón y distrito electoral.

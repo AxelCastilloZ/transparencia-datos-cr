@@ -82,6 +82,19 @@ export interface PronaeResumen {
 
 const BASE = '/api';
 
+export interface TseResumen {
+  fuente: string;
+  fechaCorte: string | null;
+  cantonCodigo: string | null;
+  total: number;
+  totalNacional: number;
+  porcentajeNacional: number;
+  alcance: string;
+}
+export interface TseSnapshot { fechaCorte: string; cantonCodigo: string; total: number }
+export interface TseDistrito extends TseSnapshot { distritoCodigo: string; distrito: string }
+export interface TseStatus { fuente: string; fechaCorte: string | null; snapshots: number; enCurso: boolean; ultimoError: string | null }
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
@@ -89,7 +102,19 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export const api = {
-  /** Lista los 82 cantones */
+  tse: {
+    status: () => get<TseStatus>('/tse/status'),
+    resumen: () => get<TseResumen>('/tse/resumen'),
+    porCanton: (codigo: string) => get<TseResumen>(`/tse/canton/${encodeURIComponent(codigo)}`),
+    historico: (codigo: string) => get<TseSnapshot[]>(`/tse/canton/${encodeURIComponent(codigo)}/historico`),
+    distritos: (codigo: string) => get<TseDistrito[]>(`/tse/canton/${encodeURIComponent(codigo)}/distritos`),
+    sync: async () => {
+      const response = await fetch(`${BASE}/tse/sync`, { method: 'POST' });
+      if (!response.ok) throw new Error('No se pudo sincronizar TSE');
+      return response.json() as Promise<{ fechaCorte: string; cantones: number; distritos: number; total: number; exteriorExcluido: number }>;
+    },
+  },
+  /** Lista los 84 cantones */
   cantones: () => get<Canton[]>('/cantones'),
 
   /** Estadísticas policiales para un cantón */

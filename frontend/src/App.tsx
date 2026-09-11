@@ -4,6 +4,7 @@ import { CantonSelector } from './components/CantonSelector';
 import { DataTable } from './components/DataTable';
 import { DelitosChart } from './components/DelitosChart';
 import { SicopPanel } from './components/SicopPanel';
+import { TsePanel } from './components/TsePanel';
 import { TimelineChart } from './components/TimelineChart';
 import { DatosAbiertosPanel } from './components/datos-abiertos';
 // junto a los otros imports de componentes:
@@ -62,7 +63,7 @@ function App() {
           </h1>
           <p className="mt-1 text-gray-500">
             Explorador de datos públicos de Costa Rica — seguridad (OIJ) y
-            contratación pública (SICOP)
+            contratación pública (SICOP), padrón electoral (TSE) y datos abiertos
           </p>
         </div>
       </header>
@@ -143,7 +144,11 @@ function App() {
           <SicopPanel canton={canton || undefined} cantonNombre={cantonNombre || undefined} />
         </section>
 
-              {/* Sección: Datos Abiertos (PRONAE) — nacional, independiente del cantón */}
+        <section className="mt-12 pt-8 border-t border-gray-200">
+          <TsePanel canton={canton || undefined} cantonNombre={cantonNombre || undefined} onCantonChange={cargarDatos} />
+        </section>
+
+        {/* Sección: Datos Abiertos (PRONAE) — nacional, independiente del cantón */}
         <section className="mt-12 pt-8 border-t border-gray-200">
           <DatosAbiertosPanel />
         </section>

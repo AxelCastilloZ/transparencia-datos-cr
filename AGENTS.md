@@ -19,7 +19,7 @@ frontend consume ÚNICAMENTE esa API propia, nunca las fuentes externas
 directamente.
 
 **Tema del proyecto:** Explorador de Transparencia por Cantón — cruza
-seguridad, contratación pública, participación electoral y datos abiertos
+seguridad, contratación pública, padrón electoral y datos abiertos
 generales de Costa Rica, todos indexados por cantón, para que un usuario
 pueda seleccionar un cantón y ver las cuatro dimensiones a la vez.
 
@@ -80,12 +80,12 @@ funcionalmente por una persona distinta.
   `cantones` (código de provincia/cantón + nombre) que todas las demás tablas
   referencian por clave foránea. Esa tabla es la que permite el cruce.
   **La tabla `cantones` ya está implementada** — se llena automáticamente con
-  83 cantones (82 oficiales + Río Cuarto) al arrancar el backend
+  84 cantones al arrancar el backend
   (`backend/src/cantones/`). No hay que crearla ni llenarla manualmente.
 - **Privacidad — importante para el módulo de TSE:** el padrón electoral
   crudo contiene datos personales por elector (nombre, cédula). Nunca se
   almacenan filas a nivel de persona en nuestra base. El proceso de
-  ingesta debe agregar (contar electores por cantón/sexo/grupo etario) y
+  ingesta debe agregar (contar electores por cantón y distrito electoral) y
   descartar el detalle individual antes de guardar.
 
 ## 5. Patrón que sigue cada módulo de fuente (para las 4 personas)
@@ -146,19 +146,24 @@ cualquier agente sabe qué generar sin que se lo repitan:
 
 ### 6.3 TSE — Padrón Electoral
 
-- **Responsable:** persona 3.
+- **Responsable:** Jose Daniel R (@Jroman07).
 - **Sin login.** Descarga: `https://www.tse.go.cr/descarga_padron.html`
 - ZIP mensual con `PADRON.TXT` (un elector por fila — **contiene datos
   personales, ver sección 4**), `DISTELEC.TXT` (distritos electorales) y
   `LEAME.TXT` (documentación del formato). Descargable completo, por
   provincia, o por cantón.
-- Cuidado con la codificación del texto (probable Latin-1/Windows-1252, no
-  UTF-8).
-- Normalizar a: conteo de electores agregado por cantón, sexo, y grupo
-  etario. **Nunca guardar nombre ni cédula.**
+- Codificación verificada: Windows-1252/Latin-1, no UTF-8.
+- Normalizar a: conteo de electores agregado por cantón y distrito electoral. **Nunca guardar nombre ni cédula.**
 - Frecuencia de cron sugerida: mensual (coincide con la publicación).
+- Primera fase implementada en `backend/src/tse/`: conteos por cantón y distrito,
+  streaming ZIP/TXT y snapshots con fecha de corte. PADRON.TXT no contiene sexo
+  ni edad. Reportes estadísticos agregados por sexo: segunda fase, sin inferencias.
 
 ### 6.4 Portal Nacional de Datos Abiertos
+
+- **Estado: implementado.** Dataset MTSS: personas beneficiarias del PRONAE
+  por modalidad, 2021–2024. Descarga XLSX, API propia y panel nacional sin cantón.
+  Cron mensual. Las pistas siguientes documentan la selección inicial.
 
 - **Responsable:** persona 4.
 - **Sin login** para consumir datasets públicos. Portal CKAN:
