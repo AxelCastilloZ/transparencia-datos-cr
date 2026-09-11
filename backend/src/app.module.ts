@@ -10,6 +10,7 @@ import { EstadisticaPolicial } from './judicial/estadistica-policial.entity.js';
 import { JudicialModule } from './judicial/judicial.module.js';
 import { Contratacion } from './sicop/contratacion.entity.js';
 import { SicopModule } from './sicop/sicop.module.js';
+import { DatosAbiertosModule } from './datos-abiertos/datos-abiertos.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SicopModule } from './sicop/sicop.module.js';
     CantonesModule,
     JudicialModule,
     SicopModule,
+    DatosAbiertosModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

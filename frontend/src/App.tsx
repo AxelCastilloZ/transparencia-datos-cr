@@ -5,6 +5,9 @@ import { DataTable } from './components/DataTable';
 import { DelitosChart } from './components/DelitosChart';
 import { SicopPanel } from './components/SicopPanel';
 import { TimelineChart } from './components/TimelineChart';
+import { DatosAbiertosPanel } from './components/datos-abiertos';
+// junto a los otros imports de componentes:
+
 
 function App() {
   const [canton, setCanton] = useState('');
@@ -139,13 +142,21 @@ function App() {
         <section className="mt-12 pt-8 border-t border-gray-200">
           <SicopPanel canton={canton || undefined} cantonNombre={cantonNombre || undefined} />
         </section>
+
+              {/* Sección: Datos Abiertos (PRONAE) — nacional, independiente del cantón */}
+        <section className="mt-12 pt-8 border-t border-gray-200">
+          <DatosAbiertosPanel />
+        </section>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-gray-200 mt-12 py-6 text-center text-sm text-gray-400">
         Proyecto universitario — Datos abiertos de Costa Rica · 2026
       </footer>
+
     </div>
+
+
   );
 }
 

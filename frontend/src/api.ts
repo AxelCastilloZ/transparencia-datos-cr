@@ -59,6 +59,27 @@ export interface GastoMensual {
   ordenes: number;
 }
 
+// ─── Datos Abiertos — PRONAE ──────────────────────────────────────────
+
+export interface PronaeModalidad {
+  modalidad: string;
+  anio: number;
+  beneficiarios: number | null;
+  esTotal: boolean;
+}
+
+export interface PronaeAnual {
+  anio: number;
+  total: number | null;
+}
+
+export interface PronaeResumen {
+  totalUltimoAnio: number | null;
+  anioMasReciente: number | null;
+  anioConMayorTotal: number | null;
+  modalidadPrincipalUltimoAnio: string | null;
+}
+
 const BASE = '/api';
 
 async function get<T>(path: string): Promise<T> {
@@ -140,5 +161,15 @@ export const api = {
       const query = qs.toString();
       return get<GastoMensual[]>(`/sicop/mensual${query ? '?' + query : ''}`);
     },
+  },
+  
+    /** Datos Abiertos — Personas beneficiarias del PRONAE (MTSS) */
+  datosAbiertos: {
+    porModalidad: (anio?: number) => {
+      const qs = anio ? `?anio=${anio}` : '';
+      return get<PronaeModalidad[]>(`/datos-abiertos/pronae${qs}`);
+    },
+    porAnio: () => get<PronaeAnual[]>('/datos-abiertos/pronae/anual'),
+    resumen: () => get<PronaeResumen>('/datos-abiertos/pronae/resumen'),
   },
 };
