@@ -319,7 +319,8 @@ export class SicopService {
       .select('c.proveedor', 'proveedor')
       .addSelect('COALESCE(SUM(c.monto_orden), 0)::float', 'total')
       .addSelect('COUNT(*)::int', 'ordenes')
-      .where('c.proveedor IS NOT NULL');
+      .where('c.proveedor IS NOT NULL')
+      .andWhere("UPPER(TRIM(c.moneda)) = 'CRC' AND c.monto_orden >= 0");
     this.rango(qb, opciones);
     if (opciones?.q) qb.andWhere('c.proveedor ILIKE :q', { q: `%${opciones.q}%` });
     if (opciones?.cantonCodigo)
@@ -340,7 +341,8 @@ export class SicopService {
       .select('c.institucion', 'institucion')
       .addSelect('COALESCE(SUM(c.monto_orden), 0)::float', 'total')
       .addSelect('COUNT(*)::int', 'ordenes')
-      .where('c.institucion IS NOT NULL');
+      .where('c.institucion IS NOT NULL')
+      .andWhere("UPPER(TRIM(c.moneda)) = 'CRC' AND c.monto_orden >= 0");
     this.rango(qb, opciones);
     if (opciones?.cantonCodigo)
       qb.andWhere('c.canton_codigo = :cc', { cc: opciones.cantonCodigo });
@@ -359,7 +361,8 @@ export class SicopService {
       .select("TO_CHAR(c.fecha_elaboracion, 'YYYY-MM')", 'mes')
       .addSelect('COALESCE(SUM(c.monto_orden), 0)::float', 'monto')
       .addSelect('COUNT(*)::int', 'ordenes')
-      .where('c.fecha_elaboracion IS NOT NULL');
+      .where('c.fecha_elaboracion IS NOT NULL')
+      .andWhere("UPPER(TRIM(c.moneda)) = 'CRC' AND c.monto_orden >= 0");
     this.rango(qb, opciones);
     if (opciones?.cantonCodigo)
       qb.andWhere('c.canton_codigo = :cc', { cc: opciones.cantonCodigo });

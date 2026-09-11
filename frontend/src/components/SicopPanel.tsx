@@ -41,6 +41,8 @@ interface Props {
   /** Código de cantón para acotar los datos. Vacío = datos nacionales. */
   canton?: string;
   cantonNombre?: string;
+  desde?: string;
+  hasta?: string;
 }
 
 /**
@@ -48,7 +50,7 @@ interface Props {
  * Fuente: SICOP vía la zona de descarga masiva del Observatorio de Compra
  * Pública (Ministerio de Hacienda).
  */
-export function SicopPanel({ canton, cantonNombre }: Props) {
+export function SicopPanel({ canton, cantonNombre, desde, hasta }: Props) {
   const [ranking, setRanking] = useState<ProveedorRanking[]>([]);
   const [instituciones, setInstituciones] = useState<InstitucionRanking[]>([]);
   const [mensual, setMensual] = useState<GastoMensual[]>([]);
@@ -59,12 +61,16 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
   const [busqueda, setBusqueda] = useState('');
   const [q, setQ] = useState('');
 
-  const ambito = canton ? { canton } : undefined;
+  const ambito = { canton, desde, hasta };
 
   // Carga: status (solo nacional) + mensual + instituciones
   useEffect(() => {
     let vivo = true;
     setLoading(true);
+    setError(false);
+    setRanking([]);
+    setMensual([]);
+    setInstituciones([]);
     Promise.all([
       canton ? Promise.resolve(null) : api.sicop.status(),
       api.sicop.mensual(ambito),
@@ -85,7 +91,7 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
       vivo = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canton]);
+  }, [canton, desde, hasta]);
 
   // Ranking de proveedores — al montar y en cada búsqueda / cambio de cantón
   useEffect(() => {
@@ -98,7 +104,7 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
       vivo = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, canton]);
+  }, [q, canton, desde, hasta]);
 
   const barData = useMemo(
     () => ranking.map((r) => ({ ...r, nombre: acortar(r.proveedor, 40) })),
@@ -127,7 +133,7 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Contratación pública — SICOP</h2>
         <p className="text-sm text-gray-500">
-          Órdenes de pedido de instituciones públicas · Fuente: SICOP vía
+          Detalle monetario exclusivamente en CRC, con monto conocido no negativo. Otras monedas se muestran separadas en el radar. Órdenes de pedido de instituciones públicas · Fuente: SICOP vía
           Observatorio de Compra Pública · {alcance}
         </p>
       </div>
@@ -136,7 +142,7 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         {canton ? (
           <Stat
-            label="Órdenes del cantón"
+            label="Órdenes del cantón en CRC con monto"
             value={loading ? '…' : ordenesPeriodo.toLocaleString('es-CR')}
           />
         ) : (
@@ -145,11 +151,11 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
             value={loading ? '…' : (total ?? 0).toLocaleString('es-CR')}
           />
         )}
-        <Stat label="Monto del período" value={loading ? '…' : colones(montoPeriodo)} />
+        <Stat label="Monto del período en CRC" value={loading ? '…' : mensual.length ? colones(montoPeriodo) : 'Sin datos comparables'} />
         <Stat label="Período" value={loading ? '…' : periodo} />
         {canton ? (
           <Stat
-            label="Instituciones compradoras"
+            label="Instituciones mostradas (máx. 8, CRC)"
             value={loading ? '…' : instituciones.length.toString()}
           />
         ) : (
@@ -179,6 +185,7 @@ export function SicopPanel({ canton, cantonNombre }: Props) {
           >
             <input
               type="text"
+              aria-label="Buscar proveedor"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar proveedor…"

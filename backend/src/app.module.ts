@@ -12,6 +12,7 @@ import { Contratacion } from './sicop/contratacion.entity.js';
 import { SicopModule } from './sicop/sicop.module.js';
 import { DatosAbiertosModule } from './datos-abiertos/datos-abiertos.module.js';
 import { TseModule } from './tse/tse.module.js';
+import { RadarModule } from './radar/radar.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TseModule } from './tse/tse.module.js';
     SicopModule,
     DatosAbiertosModule,
     TseModule,
+    RadarModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -215,3 +215,23 @@ cualquier agente sabe qué generar sin que se lo repitan:
 
 > **Nota:** el README ya cubre estos puntos para el módulo OIJ. Cada
 > integrante debe agregar sus endpoints y ejemplos cuando complete su módulo.
+
+## 10. Radar cantonal — convenciones metodológicas permanentes
+
+- `backend/src/radar/` agrega tablas existentes, sin nuevas ingestas ni copias de
+  registros. Su contrato tipado se comparte con el frontend. El radar es la
+  experiencia principal; los paneles de fuente quedan como detalle.
+- PRONAE es exclusivamente contexto nacional 2021–2024: no tiene cantón ni
+  participa en razones, comparaciones o señales cantonales. Esto precisa el
+  alcance del tema descrito en la sección 1.
+- Electores inscritos no son población total. La razón OIJ/TSE se llama «razón
+  de incidentes por cada 1.000 electores», nunca tasa poblacional o riesgo.
+- SICOP: no mezclar monedas. Radar agrupa por moneda original; los rankings y
+  series monetarias heredados se limitan a CRC con monto conocido no negativo.
+- Señales deterministas con evidencia, metodología, procedencia y límites;
+  reglas centralizadas en `radar.math.ts`. No hay puntuación única de riesgo.
+- Fechas desconocidas e indicadores sin cobertura usan null. La cobertura
+  temporal observada es un proxy, no certifica integridad de ingesta. Meses
+  incompletos no participan en variaciones mensuales.
+- Cambios metodológicos requieren pruebas y actualización del README. El radar
+  no atribuye causalidad, corrupción ni peligrosidad a ningún cantón.

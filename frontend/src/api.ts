@@ -1,4 +1,6 @@
 /** Tipos compartidos que reflejan lo que devuelve el backend */
+import type { Radar } from '../../backend/src/radar/radar.types';
+export type { Radar } from '../../backend/src/radar/radar.types';
 
 export interface Canton {
   codigo: string;
@@ -102,6 +104,12 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export const api = {
+  radar: (codigo: string, params: { desde?: string; hasta?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.desde) qs.set('desde', params.desde);
+    if (params.hasta) qs.set('hasta', params.hasta);
+    return get<Radar>(`/radar/canton/${encodeURIComponent(codigo)}?${qs}`);
+  },
   tse: {
     status: () => get<TseStatus>('/tse/status'),
     resumen: () => get<TseResumen>('/tse/resumen'),

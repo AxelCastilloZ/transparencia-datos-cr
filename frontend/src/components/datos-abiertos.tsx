@@ -63,7 +63,7 @@ export function DatosAbiertosPanel() {
         () =>
         modalidades.map((m) => ({
             modalidad: m.modalidad,
-            beneficiarios: m.beneficiarios ?? 0,
+            beneficiarios: m.beneficiarios,
         })),
         [modalidades],
     );
@@ -93,15 +93,15 @@ export function DatosAbiertosPanel() {
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Stat
             label={`Total beneficiarios ${resumen?.anioMasReciente ?? ''}`}
-            value={resumen?.totalUltimoAnio?.toLocaleString('es-CR') ?? '…'}
+            value={resumen?.totalUltimoAnio?.toLocaleString('es-CR') ?? 'No disponible'}
             />
             <Stat
             label="Año con mayor total"
-            value={resumen?.anioConMayorTotal?.toString() ?? '…'}
+            value={resumen?.anioConMayorTotal?.toString() ?? 'No disponible'}
             />
             <Stat
             label={`Modalidad principal ${resumen?.anioMasReciente ?? ''}`}
-            value={resumen?.modalidadPrincipalUltimoAnio ?? '…'}
+            value={resumen?.modalidadPrincipalUltimoAnio ?? 'No disponible'}
             />
             <Stat
             label="Período de datos"
@@ -115,7 +115,7 @@ export function DatosAbiertosPanel() {
             Evolución anual de beneficiarios
             </h3>
             {anual.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">Cargando…</div>
+            <div className="h-64 flex items-center justify-center text-gray-600">{resumen === null ? 'Cargando…' : 'Sin datos nacionales PRONAE disponibles'}</div>
             ) : (
             <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={anual} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
@@ -137,6 +137,7 @@ export function DatosAbiertosPanel() {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h3 className="text-lg font-semibold text-gray-900">Distribución por modalidad</h3>
             <select
+                aria-label="Año del contexto nacional PRONAE"
                 value={anio}
                 onChange={(e) => setAnio(Number(e.target.value))}
                 className="px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:outline-none
