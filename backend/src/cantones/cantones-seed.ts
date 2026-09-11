@@ -1,5 +1,5 @@
 /**
- * Los 82 cantones oficiales de Costa Rica.
+ * Los 84 cantones oficiales de Costa Rica.
  * Código = provincia (1 dígito) + cantón (2 dígitos).
  * Fuente: División Territorial Administrativa de Costa Rica (INEC / TSE).
  */
@@ -86,7 +86,8 @@ export const CANTONES_CR: { codigo: string; nombre: string; provincia: string }[
   { codigo: '609', nombre: 'Parrita', provincia: 'Puntarenas' },
   { codigo: '610', nombre: 'Corredores', provincia: 'Puntarenas' },
   { codigo: '611', nombre: 'Garabito', provincia: 'Puntarenas' },
-  { codigo: '612', nombre: 'Puerto Jiménez', provincia: 'Puntarenas' },
+  { codigo: '612', nombre: 'Monteverde', provincia: 'Puntarenas' },
+  { codigo: '613', nombre: 'Puerto Jiménez', provincia: 'Puntarenas' },
   // ── Limón (7) ──
   { codigo: '701', nombre: 'Limón', provincia: 'Limón' },
   { codigo: '702', nombre: 'Pococí', provincia: 'Limón' },

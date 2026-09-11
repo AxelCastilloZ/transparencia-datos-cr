@@ -5,7 +5,7 @@ import { CantonesService } from './cantones.service.js';
 export class CantonesController {
   constructor(private readonly cantonesService: CantonesService) {}
 
-  /** GET /api/cantones — lista los 82 cantones */
+  /** GET /api/cantones — lista los 84 cantones */
   @Get()
   findAll() {
     return this.cantonesService.findAll();

@@ -14,17 +14,38 @@ export class CantonesService implements OnModuleInit {
   ) {}
 
   /**
-   * Al iniciar el módulo, seedea los 82 cantones si la tabla está vacía.
+   * Reconcilia los 84 cantones también en instalaciones existentes.
    */
   async onModuleInit(): Promise<void> {
-    const count = await this.cantonRepo.count();
-    if (count > 0) {
-      this.logger.log(`Tabla cantones ya tiene ${count} registros, no se hace seed.`);
-      return;
-    }
-
-    this.logger.log('Seeding 82 cantones de Costa Rica...');
-    await this.cantonRepo.save(CANTONES_CR);
+    await this.cantonRepo.manager.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock(840612)');
+      const legacy = await manager.findOneBy(Canton, { codigo: '612' });
+      await manager.upsert(
+        Canton,
+        CANTONES_CR.filter((c) => c.codigo === '613'),
+        ['codigo'],
+      );
+      if (legacy?.nombre === 'Puerto Jiménez') {
+        // Preservar las referencias existentes antes de asignar 612 a Monteverde.
+        for (const meta of manager.connection.entityMetadatas) {
+          for (const fk of meta.foreignKeys) {
+            if (
+              fk.referencedEntityMetadata.target === Canton &&
+              fk.columns.length === 1
+            ) {
+              const column = fk.columns[0].propertyName;
+              await manager
+                .createQueryBuilder()
+                .update(meta.target)
+                .set({ [column]: '613' })
+                .where({ [column]: '612' })
+                .execute();
+            }
+          }
+        }
+      }
+      await manager.upsert(Canton, CANTONES_CR, ['codigo']);
+    });
     this.logger.log('Seed de cantones completado.');
   }
 

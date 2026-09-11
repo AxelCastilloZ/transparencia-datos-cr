@@ -5,7 +5,7 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
  * Todas las entidades de fuente (judicial, sicop, tse, datos-abiertos)
  * referencian esta tabla por clave foránea para permitir el cruce geográfico.
  *
- * Costa Rica tiene 82 cantones agrupados en 7 provincias.
+ * Costa Rica tiene 84 cantones agrupados en 7 provincias.
  * El código sigue el formato oficial: provincia (1 dígito) + cantón (2 dígitos).
  */
 @Entity('cantones')
