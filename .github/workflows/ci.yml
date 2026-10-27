@@ -31,10 +31,11 @@ jobs:
           pnpm --dir backend lint
           pnpm --dir frontend lint
 
-      - name: Ejecutar Pruebas Unitarias
-        run: |
-          pnpm --dir backend test
-          pnpm --dir frontend test --maxWorkers=1
+      - name: Ejecutar Pruebas Unitarias Backend
+        run: pnpm --dir backend test
+
+      - name: Ejecutar Pruebas Unitarias Frontend
+        run: pnpm --dir frontend test --maxWorkers=1
 
       - name: Compilar Frontend y Backend
         run: pnpm build
