@@ -1,0 +1,62 @@
+name: CI & DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  build-and-test:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Ejecutar Linters
+        run: |
+          pnpm --dir backend lint
+          pnpm --dir frontend lint
+
+      - name: Ejecutar Pruebas Unitarias
+        run: |
+          pnpm --dir backend test
+          pnpm --dir frontend test --maxWorkers=1
+
+      - name: Compilar Frontend y Backend
+        run: pnpm build
+
+  security-sast:
+    name: Análisis SAST & Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Escaneo de Secretos con Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Escaneo SAST con Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/ci
