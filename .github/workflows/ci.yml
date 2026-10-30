@@ -102,6 +102,45 @@ jobs:
             --lockfile=pnpm-lock.yaml
             --format=table
 
+  e2e-tests:
+    name: Pruebas E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar browsers de Playwright
+        run: pnpm --dir frontend exec playwright install --with-deps chromium
+
+      - name: Compilar frontend
+        run: pnpm --dir frontend run build
+
+      - name: Ejecutar tests E2E
+        run: pnpm --dir frontend test:e2e
+        env:
+          CI: true
+
+      - name: Subir reporte de Playwright
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
   container-scan:
     name: Build & Scan Contenedores
     runs-on: ubuntu-latest
