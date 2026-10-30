@@ -1,0 +1,12 @@
+node_modules
+.git
+.env
+*.md
+docs/
+.github/
+.pre-commit-config.yaml
+frontend/e2e/
+frontend/playwright-report/
+frontend/test-results/
+backend/dist/
+frontend/dist/
