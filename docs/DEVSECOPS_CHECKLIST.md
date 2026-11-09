@@ -79,7 +79,7 @@ Mapeo de los 12 ítems implementados del ciclo de vida de desarrollo seguro
 
   | Archivo | Flujo | Tests | Datos |
   | :------ | :---- | :---: | :---- |
-  | `radar.spec.ts` | Carga inicial, selector de cantón, ficha, contexto nacional, filtros | 5 | Backend real para cargar la ficha |
+  | `radar.spec.ts` | Carga inicial, selector de cantón, ficha, contexto nacional, filtros | 5 | API simulada para cargar la ficha |
   | `modulos.spec.ts` | Radar: error y reintento | 1 | API simulada |
   | `modulos.spec.ts` | SICOP: montos separados por moneda, cantón y período consultados, buscador, HTML malicioso mostrado como texto (XSS), error de API | 5 | API simulada |
   | `modulos.spec.ts` | TSE: conteos agregados con su aclaración, error y reintento | 2 | API simulada |
