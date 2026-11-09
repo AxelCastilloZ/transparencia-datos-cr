@@ -84,10 +84,11 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
+      # pnpm sbom lee pnpm-lock.yaml; cyclonedx-npm requiere package-lock.json, que no existe en este repo
       - name: Generar SBOM (CycloneDX)
         run: |
-          npx @cyclonedx/cyclonedx-npm --output-file sbom-backend.json --package-lock-only backend/
-          npx @cyclonedx/cyclonedx-npm --output-file sbom-frontend.json --package-lock-only frontend/
+          pnpm --filter ./backend sbom --sbom-format cyclonedx --sbom-spec-version 1.6 --sbom-type application --prod > sbom-backend.json
+          pnpm --filter ./frontend sbom --sbom-format cyclonedx --sbom-spec-version 1.6 --sbom-type application --prod > sbom-frontend.json
 
       - name: Subir SBOM como artefacto
         uses: actions/upload-artifact@v4
