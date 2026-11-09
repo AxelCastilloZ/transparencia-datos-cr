@@ -1,0 +1,10 @@
+# Falso positivo: token de ejemplo (abc123def456) del badge de CircleCI
+# que trae la plantilla de NestJS en backend/README.md, linea 5.
+# No es una credencial real.
+
+# Escaneo del historial Git
+150f3157b1bac16865a43095a3e018e026f4b43b:backend/README.md:generic-api-key:5
+
+# Escaneo de archivos (la ruta cambia segun el sistema operativo)
+backend/README.md:generic-api-key:5
+backend\README.md:generic-api-key:5

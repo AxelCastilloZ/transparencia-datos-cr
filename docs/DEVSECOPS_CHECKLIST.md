@@ -31,8 +31,9 @@ Mapeo de los 12 ítems implementados del ciclo de vida de desarrollo seguro
 
 ### 2.3 Herramientas de seguridad locales (pre-commit)
 - **Archivo:** `.pre-commit-config.yaml`
-- **Contenido:** Gitleaks (secret scanning) + Semgrep (SAST) ejecutados
-  automáticamente antes de cada commit local.
+- **Contenido:** Gitleaks (secret scanning) ejecutado automáticamente sobre
+  los cambios en staging antes de cada commit local. Semgrep (SAST) corre
+  solo en CI (ítem 3.2).
 - **Instalación:** `pip install pre-commit && pre-commit install`
 - **Responsable sugerido:** Compañero 2
 
@@ -72,9 +73,20 @@ Mapeo de los 12 ítems implementados del ciclo de vida de desarrollo seguro
 - **Responsable sugerido:** Axel
 
 ### 4.4 Pruebas E2E con Playwright
-- **Archivos:** `frontend/playwright.config.ts`, `frontend/e2e/radar.spec.ts`
-- **Contenido:** 5 tests E2E para el flujo principal del radar cantonal:
-  carga inicial, selector de cantón, ficha, contexto nacional, filtros.
+- **Archivos:** `frontend/playwright.config.ts`, `frontend/e2e/radar.spec.ts`,
+  `frontend/e2e/modulos.spec.ts`
+- **Contenido:** 13 tests E2E:
+
+  | Archivo | Flujo | Tests | Datos |
+  | :------ | :---- | :---: | :---- |
+  | `radar.spec.ts` | Carga inicial, selector de cantón, ficha, contexto nacional, filtros | 5 | Backend real para cargar la ficha |
+  | `modulos.spec.ts` | Radar: error y reintento | 1 | API simulada |
+  | `modulos.spec.ts` | SICOP: montos separados por moneda, cantón y período consultados, buscador, HTML malicioso mostrado como texto (XSS), error de API | 5 | API simulada |
+  | `modulos.spec.ts` | TSE: conteos agregados con su aclaración, error y reintento | 2 | API simulada |
+
+- **Alcance:** los tests con API simulada (`page.route()`) verifican el
+  frontend y no necesitan backend ni base de datos; no prueban la integración
+  real con la base. No cubren el detalle OIJ ni el panel PRONAE.
 - **Ejecución:** `pnpm --dir frontend test:e2e`
 - **Responsable sugerido:** Compañero 2
 
@@ -118,7 +130,7 @@ Mapeo de los 12 ítems implementados del ciclo de vida de desarrollo seguro
 | Integrante   | Ítems                    | Total |
 | :----------- | :----------------------- | :---: |
 | Axel         | 1.1, 1.3, 3.1, 4.2, 7.1 | 5     |
-| Compañero 2  | 2.3, 4.4                 | 2 (+1 pendiente) |
+| Compañero 2  | 2.3, 4.4, E2E de SICOP y TSE | 3 |
 | Compañero 3  | 3.2, 5.1                 | 2 (+1 pendiente) |
 | Compañero 4  | 3.3, 6.1                 | 2 (+1 pendiente) |
 
