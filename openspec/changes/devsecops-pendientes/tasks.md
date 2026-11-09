@@ -14,20 +14,20 @@
 ## Compañero 2 — Pre-commit y E2E
 
 ### Tarea 2.1: Documentar pre-commit hooks (ítem 2.3)
-- [ ] Instalar pre-commit: `pip install pre-commit && pre-commit install`
-- [ ] Correr los hooks manualmente: `pre-commit run --all-files`
-- [ ] Capturar screenshot de Gitleaks pasando
-- [ ] Agregar sección en README sobre "Seguridad local"
+- [x] Instalar pre-commit: `pip install pre-commit && pre-commit install`
+- [x] Correr los hooks manualmente: `pre-commit run --all-files`
+- [x] Capturar screenshot de Gitleaks pasando
+- [x] Agregar sección en README sobre "Seguridad local"
 
 ### Tarea 2.2: Ejecutar y verificar E2E (ítem 4.4)
-- [ ] Instalar browsers de Playwright: `pnpm --dir frontend exec playwright install chromium`
-- [ ] Correr tests E2E: `pnpm --dir frontend test:e2e`
-- [ ] Capturar screenshot/reporte de Playwright
-- [ ] Agregar al menos 1 test E2E nuevo para un flujo diferente
+- [x] Instalar browsers de Playwright: `pnpm --dir frontend exec playwright install chromium`
+- [x] Correr tests E2E: `pnpm --dir frontend test:e2e`
+- [x] Capturar screenshot/reporte de Playwright
+- [x] Agregar al menos 1 test E2E nuevo para un flujo diferente
 
 ### Tarea 2.3: Ítem adicional
-- [ ] Agregar test E2E para el panel TSE o SICOP
-- [ ] Documentar cobertura E2E en `docs/DEVSECOPS_CHECKLIST.md`
+- [x] Agregar test E2E para el panel TSE o SICOP
+- [x] Documentar cobertura E2E en `docs/DEVSECOPS_CHECKLIST.md`
 
 ---
 
