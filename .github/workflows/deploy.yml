@@ -10,8 +10,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  BACKEND_IMAGE: ghcr.io/axelcastilloz/transparencia-datos-cr/backend
+  FRONTEND_IMAGE: ghcr.io/axelcastilloz/transparencia-datos-cr/frontend
 
 jobs:
   build-and-push:
