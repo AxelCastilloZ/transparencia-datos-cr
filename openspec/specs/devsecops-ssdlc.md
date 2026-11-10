@@ -18,8 +18,12 @@ NIST NCCoE al proyecto Transparencia Datos CR. Mínimo 12 ítems cubiertos entre
 
 ### Etapa 3 — Pipeline CI/CD
 - **3.1** GitHub Actions CI → `.github/workflows/ci.yml`
-- **3.2** SAST + Secrets + SCA → Semgrep, Gitleaks, OSV-Scanner, SBOM
-- **3.3** Container scanning → Trivy en job `container-scan`
+- **3.2** SAST + Secrets + SCA → Semgrep, Gitleaks, OSV-Scanner (`v2.7.0`),
+  SBOM CycloneDX con `anchore/sbom-action` (Syft, compatible con pnpm)
+- **3.3** Container scanning → Trivy (`v0.36.0`) en job `container-scan`
+- **3.5** Acciones de terceros ancladas por SHA (OSV-Scanner, Trivy, Syft)
+
+> Correcciones de pipeline registradas en `changes/fix-ci-pipeline`.
 
 ### Etapa 4 — Pruebas
 - **4.2** Tests unitarios → 69 backend + 13 frontend (82 total)
@@ -27,6 +31,7 @@ NIST NCCoE al proyecto Transparencia Datos CR. Mínimo 12 ítems cubiertos entre
 
 ### Etapa 5 — Release
 - **5.1** Dockerfiles + SBOM → `backend/Dockerfile`, `frontend/Dockerfile`
+  (el build del frontend incluye los tipos compartidos del backend)
 
 ### Etapa 6 — Deployment
 - **6.1** Pipeline de deploy → `.github/workflows/deploy.yml` (GHCR)
