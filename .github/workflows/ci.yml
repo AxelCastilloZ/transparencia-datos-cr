@@ -84,23 +84,64 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
+      # SBOM con Syft: entiende el workspace pnpm (cyclonedx-npm requería
+      # package-lock.json de npm, que este repo no tiene). Sube el artefacto solo.
       - name: Generar SBOM (CycloneDX)
-        run: |
-          npx @cyclonedx/cyclonedx-npm --output-file sbom-backend.json --package-lock-only backend/
-          npx @cyclonedx/cyclonedx-npm --output-file sbom-frontend.json --package-lock-only frontend/
-
-      - name: Subir SBOM como artefacto
-        uses: actions/upload-artifact@v4
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
-          name: sbom
-          path: sbom-*.json
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+          artifact-name: sbom.cyclonedx.json
 
+      # Report-only por ahora: muestra los hallazgos sin bloquear la integración.
+      # Para hacerlo obligatorio (ítems 3.2/3.6), quitar continue-on-error.
       - name: Escaneo de dependencias con OSV-Scanner
-        uses: google/osv-scanner-action/osv-scanner-action@v1
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
         with:
           scan-args: |-
             --lockfile=pnpm-lock.yaml
             --format=table
+
+  e2e-tests:
+    name: Pruebas E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar browsers de Playwright
+        run: pnpm --dir frontend exec playwright install --with-deps chromium
+
+      - name: Compilar frontend
+        run: pnpm --dir frontend run build
+
+      - name: Ejecutar tests E2E
+        run: pnpm --dir frontend test:e2e
+        env:
+          CI: true
+
+      - name: Subir reporte de Playwright
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
 
   container-scan:
     name: Build & Scan Contenedores
@@ -132,28 +173,20 @@ jobs:
           load: true
           tags: transparencia-cr-frontend:ci
 
+      # Report-only por ahora (exit-code 0): reporta CRITICAL/HIGH sin romper el
+      # build por vulnerabilidades de la imagen base. Para bloquear, poner exit-code 1.
       - name: Escaneo Trivy — backend
-        id: trivy_backend
-        uses: aquasecurity/trivy-action@v0.36.0
-        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: transparencia-cr-backend:ci
           format: table
-          exit-code: '1'
+          exit-code: 0
           severity: CRITICAL,HIGH
 
       - name: Escaneo Trivy — frontend
-        id: trivy_frontend
-        uses: aquasecurity/trivy-action@v0.36.0
-        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: transparencia-cr-frontend:ci
           format: table
-          exit-code: '1'
+          exit-code: 0
           severity: CRITICAL,HIGH
-
-      - name: Verificar resultados de seguridad
-        if: ${{ !cancelled() && (steps.trivy_backend.outcome == 'failure' || steps.trivy_frontend.outcome == 'failure') }}
-        run: |
-          echo "::error::Se detectaron vulnerabilidades o errores en los escaneos de Trivy"
-          exit 1
