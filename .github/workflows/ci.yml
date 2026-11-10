@@ -132,18 +132,28 @@ jobs:
           load: true
           tags: transparencia-cr-frontend:ci
 
-      - name: Escaneo Trivy — backend
+            - name: Escaneo Trivy — backend
+        id: trivy_backend
         uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
         with:
           image-ref: transparencia-cr-backend:ci
           format: table
-          exit-code: 1
+          exit-code: '1'
           severity: CRITICAL,HIGH
 
       - name: Escaneo Trivy — frontend
+        id: trivy_frontend
         uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
         with:
           image-ref: transparencia-cr-frontend:ci
           format: table
-          exit-code: 1
+          exit-code: '1'
           severity: CRITICAL,HIGH
+
+      - name: Verificar resultados de seguridad
+        if: ${{ !cancelled() && (steps.trivy_backend.outcome == 'failure' || steps.trivy_frontend.outcome == 'failure') }}
+        run: |
+          echo "::error::Se detectaron vulnerabilidades o errores en los escaneos de Trivy"
+          exit 1
