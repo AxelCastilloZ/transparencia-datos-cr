@@ -141,7 +141,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Escaneo Trivy — frontend
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: transparencia-cr-frontend:ci
           format: table
