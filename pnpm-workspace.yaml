@@ -7,3 +7,10 @@ packages:
 # Forzamos la ultima version CommonJS de ora. Inofensivo en Node 20 LTS.
 overrides:
   ora: "5.4.1"
+  # Parches de seguridad en dependencias transitivas de desarrollo cuyos
+  # paquetes padre aun no los incluyen. Ver docs/SECURITY_FINDINGS.md (R7).
+  "undici@6": "^6.29.1"
+  "undici@8": "^8.12.4"
+  "tmp@<0.2.6": "^0.2.7"
+  "source-map-js@<1.2.2": "^1.2.2"
+  "qs@<6.16.1": "^6.17.1"

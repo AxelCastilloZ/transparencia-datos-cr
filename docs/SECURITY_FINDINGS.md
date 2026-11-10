@@ -19,7 +19,7 @@ Este documento registra los resultados de los análisis de seguridad automatizad
 | `pnpm sbom` | SBOM CycloneDX 1.6 | Dependencias de producción | Backend: 185 componentes; Frontend: 45 componentes |
 | `docker compose build` | Build de imágenes | `backend/Dockerfile`, `frontend/Dockerfile` | Ambas imágenes construyen (tras corregir el frontend) |
 
-**Después de aplicar R1 (§7):** OSV-Scanner 62 vulnerabilidades en 15 paquetes; `pnpm audit` 62 avisos, 12 en producción. `xlsx` ya no aparece.
+La tabla refleja el estado inicial. **Después de aplicar R1 (§7):** OSV-Scanner 62 vulnerabilidades en 15 paquetes; `pnpm audit` 62 avisos, 12 en producción. **Después de aplicar R2, R3 y R7 (§8):** OSV-Scanner y `pnpm audit` sin vulnerabilidades conocidas (OSV con las 2 excepciones justificadas de `xlsx`).
 
 ## 2. Problemas encontrados en el pipeline
 
@@ -104,7 +104,7 @@ No se incluyen en las imágenes de producción (`--prod` / multi-stage), pero se
 
 - **Formato:** CycloneDX 1.6 (JSON), generado con `pnpm sbom`.
 - **Contenido:** solo dependencias de producción (`--prod`); componentes con `purl` (`pkg:npm/...`).
-- **Tamaño:** backend 185 componentes, frontend 45 componentes.
+- **Tamaño:** backend 185 componentes, frontend 45 componentes (tras R1, R2 y R3 el backend queda en 172).
 - **En CI:** se genera en el job `security-sca` y se publica como artefacto `sbom` (retención 90 días).
 - **Dependencias críticas del backend:** `@nestjs/*`, Express (vía `@nestjs/platform-express`), `typeorm`, `pg`, `axios`, `xlsx`. Del frontend: `react`, `react-dom`, `recharts`.
 
@@ -115,12 +115,12 @@ Ordenadas por prioridad. Cada una debe validarse con `pnpm test`, `pnpm build` y
 | ID | Prioridad | Acción | Resuelve |
 | :--- | :--- | :--- | :--- |
 | R1 | Alta | **Aplicada (§7).** Actualizar `xlsx` a 0.20.3 desde el CDN oficial de SheetJS, ya que SheetJS dejó de publicar en npm. | `xlsx` (entrada externa) |
-| R2 | Alta | Actualizar `@nestjs/core` y `@nestjs/platform-express`; si la versión no trae los parches, fijar con `overrides` en `pnpm-workspace.yaml`: `proxy-addr >=2.0.8`, `multer >=2.5.0`, `body-parser >=2.4.0`, `qs >=6.16.1`. | `proxy-addr`, `multer`, `body-parser`, `qs` |
-| R3 | Media | Actualizar `axios` a una versión que incluya `follow-redirects >=1.16.2`, o fijarla con `overrides`. | `follow-redirects` |
+| R2 | Alta | **Aplicada (§8).** Actualizar los paquetes `@nestjs/*` a 12.4.x. | `proxy-addr`, `multer`, `body-parser`, `qs` |
+| R3 | Media | **Aplicada (§8).** Actualizar `axios` a 1.21.1, que incluye `follow-redirects >=1.16.2`. | `follow-redirects` |
 | R4 | Media | Fijar todas las acciones de `ci.yml` y `deploy.yml` por SHA de commit, con el tag como comentario. | S1 (25 hallazgos) |
 | R5 | Media | Agregar a `pnpm-workspace.yaml`: `minimumReleaseAge: 10080`, `trustPolicy: no-downgrade`, `blockExoticSubdeps: true`. | S2–S4 |
 | R6 | Media | Reemplazar `semgrep/semgrep-action@v1` (deprecada) por un paso con la imagen `semgrep/semgrep` y `semgrep ci --config p/ci`, para que los hallazgos se reporten igual que en local. | Observación del §3 |
-| R7 | Baja | Actualizar dependencias de desarrollo (`concurrently`, `vitest`, `vite`, `@nestjs/cli`). | Tabla §4.2 |
+| R7 | Baja | **Aplicada (§8).** Actualizar dependencias de desarrollo (`concurrently`, `vitest`, `vite`, `@nestjs/cli`) y fijar con `overrides` las transitivas sin parche en sus paquetes padre. | Tabla §4.2 |
 | R8 | Baja | En los Dockerfiles, reemplazar `corepack prepare pnpm@latest` por la versión de `packageManager` (11.2.2) para builds reproducibles. | Reproducibilidad del build |
 
 ## 7. Remediación aplicada: R1 (`xlsx`)
@@ -140,7 +140,30 @@ Ordenadas por prioridad. Cada una debe validarse con `pnpm test`, `pnpm build` y
 
 Evidencia: `docs/evidencias/scans-2026-11-10/osv-scanner-post-r1.json` y `pnpm-audit-prod-post-r1.json`.
 
-## 8. Cómo reproducir
+## 8. Remediaciones aplicadas: R2, R3 y R7
+
+- **Actualizaciones directas (sin cambios de versión mayor):** `pnpm update -r '@nestjs/*' axios vitest '@vitest/*' vite concurrently`. Principales versiones: `@nestjs/core` y `@nestjs/platform-express` 12.4.2, `axios` 1.21.1, `vite` 8.3.7, `vitest` 4.1.12, `concurrently` 10.0.7. Con esto `pnpm audit --prod` llegó a 0.
+- **Overrides en `pnpm-workspace.yaml`:** quedaban 33 avisos de desarrollo en transitivas cuyos paquetes padre aún no traen el parche. Se fijaron respetando la versión mayor de cada una:
+
+  | Override | Versión | Llega por |
+  | :--- | :--- | :--- |
+  | `undici@6` | `^6.29.1` | `@nestjs/mau` |
+  | `undici@8` | `^8.12.4` | `jsdom` |
+  | `tmp@<0.2.6` | `^0.2.7` | `@nestjs/mau` → `inquirer` → `external-editor` |
+  | `source-map-js@<1.2.2` | `^1.2.2` | `vitest`, `magicast` |
+  | `qs@<6.16.1` | `^6.17.1` | `supertest` → `superagent` |
+
+- **Verificación:** lint de backend y frontend, `pnpm test` (82/82), `pnpm build` y `docker compose build` correctos. No se probó el backend contra la base de datos real.
+
+| Métrica | Inicial | Tras R1 | Tras R2, R3 y R7 |
+| :--- | :--- | :--- | :--- |
+| OSV-Scanner (paquetes / vulnerabilidades) | 16 / 64 | 15 / 62 | 0 / 0 |
+| `pnpm audit` total | 64 | 62 | 0 |
+| `pnpm audit --prod` | 14 | 12 | 0 |
+
+Evidencia: `docs/evidencias/scans-2026-11-10/osv-scanner-post-r2-r3-r7.json` y `pnpm-audit-post-r2-r3-r7.json`. Este resultado corresponde a la fecha del escaneo: las bases de vulnerabilidades se actualizan a diario y pueden aparecer avisos nuevos.
+
+## 9. Cómo reproducir
 
 Requiere Docker Desktop encendido y ejecutar desde la raíz del repo.
 
