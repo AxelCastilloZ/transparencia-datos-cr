@@ -1,0 +1,12 @@
+# Excepciones de OSV-Scanner. Cada una debe tener una justificación verificable.
+# Ver docs/SECURITY_FINDINGS.md (R1).
+
+[[IgnoredVulns]]
+id = "GHSA-4r6h-8v6p-xvw6"
+ignoreUntil = 2027-05-10
+reason = "Falso positivo: xlsx 0.20.3 se instala desde cdn.sheetjs.com y ya incluye el parche (corregido en 0.19.3). El aviso marca todas las versiones de npm como afectadas porque SheetJS dejó de publicar en npm."
+
+[[IgnoredVulns]]
+id = "GHSA-5pgg-2g8v-p4x9"
+ignoreUntil = 2027-05-10
+reason = "Falso positivo: xlsx 0.20.3 se instala desde cdn.sheetjs.com y ya incluye el parche (corregido en 0.20.2). El aviso marca todas las versiones de npm como afectadas porque SheetJS dejó de publicar en npm."
