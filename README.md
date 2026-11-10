@@ -309,6 +309,64 @@ arrancar el backend (`synchronize: true` en desarrollo).
 - ✅ El módulo de TSE **nunca debe guardar datos personales** (nombre, cédula).
   Solo conteos agregados por cantón y distrito electoral.
 
+## Seguridad local
+
+Antes de cada commit, un hook de [pre-commit](https://pre-commit.com/) ejecuta
+[Gitleaks](https://github.com/gitleaks/gitleaks) sobre los cambios preparados y
+bloquea el commit si detecta un secreto (por ejemplo, el `DATABASE_URL` o una
+API key). Así el secreto no llega a entrar en el historial de Git, donde
+borrarlo es mucho más difícil. La configuración está en
+`.pre-commit-config.yaml`.
+
+### Instalación
+
+Requiere Python. Cada integrante lo instala una vez por clon, desde la raíz:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+### Qué revisa cada control
+
+| Control | Cuándo corre | Alcance |
+| :------ | :----------- | :------ |
+| Gitleaks (hook local) | Antes de cada commit | Solo los cambios en staging |
+| Gitleaks (CI, job `security-sast`) | En cada push o PR a `main` y `development` | Commits en GitHub |
+| Semgrep (CI, job `security-sast`) | En cada push o PR a `main` y `development` | Código del repositorio |
+
+Semgrep corre únicamente en CI, no en el hook local. El hook local se puede
+saltar con `git commit --no-verify`, así que CI es la segunda barrera; no uses
+esa opción para esquivar un hallazgo.
+
+### Ejecutarlo a mano
+
+```bash
+pre-commit run --all-files
+```
+
+Ojo: aunque el comando diga `--all-files`, el hook usa
+`gitleaks protect --staged`, así que solo analiza lo que esté en staging. Un
+resultado `Passed` sin cambios preparados no significa que se haya revisado el
+repositorio. Para revisar todo el historial y los archivos actuales, con
+Gitleaks instalado y sin mostrar los valores encontrados:
+
+```bash
+gitleaks git --redact .
+```
+
+```bash
+gitleaks dir --redact .
+```
+
+### Falsos positivos
+
+Las excepciones se registran en `.gitleaksignore`, cada una con su huella
+exacta y un comentario que la justifique. Hoy hay una sola: el token de ejemplo
+del badge de CircleCI que trae la plantilla de NestJS en `backend/README.md`,
+que no es una credencial real. Si Gitleaks detecta un valor real, no lo
+ignores: revocá la credencial, sacala del código y avisale al equipo.
+
 ## Radar cantonal de señales públicas
 
 ### Propósito y usuarios
