@@ -19,6 +19,8 @@ Este documento registra los resultados de los análisis de seguridad automatizad
 | `pnpm sbom` | SBOM CycloneDX 1.6 | Dependencias de producción | Backend: 185 componentes; Frontend: 45 componentes |
 | `docker compose build` | Build de imágenes | `backend/Dockerfile`, `frontend/Dockerfile` | Ambas imágenes construyen (tras corregir el frontend) |
 
+**Después de aplicar R1 (§7):** OSV-Scanner 62 vulnerabilidades en 15 paquetes; `pnpm audit` 62 avisos, 12 en producción. `xlsx` ya no aparece.
+
 ## 2. Problemas encontrados en el pipeline
 
 Antes de analizar resultados hubo que lograr que las herramientas corrieran. El job `security-sca` nunca había ejecutado OSV-Scanner ni generado el SBOM.
@@ -75,7 +77,7 @@ Se revisó el código para determinar si cada vulnerabilidad es alcanzable.
 
 | Paquete | Versión | CVSS máx. | Vulnerabilidades | Llega por | ¿Explotable aquí? |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `xlsx` | 0.18.5 | 7.8 | Prototype pollution (GHSA-4r6h-8v6p-xvw6), ReDoS (GHSA-5pgg-2g8v-p4x9) | Dependencia directa | **Sí.** `datos-abiertos.services.ts:76` descarga un Excel de datos.go.cr y lo procesa con `XLSX.read`: entrada externa |
+| `xlsx` | 0.18.5 | 7.8 | Prototype pollution (GHSA-4r6h-8v6p-xvw6), ReDoS (GHSA-5pgg-2g8v-p4x9) | Dependencia directa | **Sí.** `datos-abiertos.services.ts:76` descarga un Excel de datos.go.cr y lo procesa con `XLSX.read`: entrada externa. **Corregido con R1.** |
 | `proxy-addr` | 2.0.7 | 9.1 | IP spoofing con IPv4 mapeada en IPv6 (GHSA-jqcg-44mw-7w3h) | `@nestjs/platform-express` → Express | No: solo aplica con `trust proxy`, que `main.ts` no configura |
 | `follow-redirects` | 1.16.0 | 8.2 | Fuga de cabeceras de credenciales en redirecciones (3 avisos) | `axios` | Bajo: axios solo consulta APIs públicas sin credenciales |
 | `body-parser` | 2.3.0 | 7.5 | DoS con bytes extra tras cuerpo comprimido (GHSA-27r3-jxmh-p828) | Express | Posible: hay 4 endpoints `POST /sync` (judicial, sicop, tse, datos-abiertos) que procesan cuerpos de petición; una petición comprimida maliciosa podría causar denegación de servicio |
@@ -112,7 +114,7 @@ Ordenadas por prioridad. Cada una debe validarse con `pnpm test`, `pnpm build` y
 
 | ID | Prioridad | Acción | Resuelve |
 | :--- | :--- | :--- | :--- |
-| R1 | Alta | Actualizar `xlsx` a 0.20.3 o posterior desde el CDN oficial de SheetJS (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), ya que SheetJS dejó de publicar en npm. Alternativa: migrar a `exceljs`. | `xlsx` (entrada externa) |
+| R1 | Alta | **Aplicada (§7).** Actualizar `xlsx` a 0.20.3 desde el CDN oficial de SheetJS, ya que SheetJS dejó de publicar en npm. | `xlsx` (entrada externa) |
 | R2 | Alta | Actualizar `@nestjs/core` y `@nestjs/platform-express`; si la versión no trae los parches, fijar con `overrides` en `pnpm-workspace.yaml`: `proxy-addr >=2.0.8`, `multer >=2.5.0`, `body-parser >=2.4.0`, `qs >=6.16.1`. | `proxy-addr`, `multer`, `body-parser`, `qs` |
 | R3 | Media | Actualizar `axios` a una versión que incluya `follow-redirects >=1.16.2`, o fijarla con `overrides`. | `follow-redirects` |
 | R4 | Media | Fijar todas las acciones de `ci.yml` y `deploy.yml` por SHA de commit, con el tag como comentario. | S1 (25 hallazgos) |
@@ -121,7 +123,24 @@ Ordenadas por prioridad. Cada una debe validarse con `pnpm test`, `pnpm build` y
 | R7 | Baja | Actualizar dependencias de desarrollo (`concurrently`, `vitest`, `vite`, `@nestjs/cli`). | Tabla §4.2 |
 | R8 | Baja | En los Dockerfiles, reemplazar `corepack prepare pnpm@latest` por la versión de `packageManager` (11.2.2) para builds reproducibles. | Reproducibilidad del build |
 
-## 7. Cómo reproducir
+## 7. Remediación aplicada: R1 (`xlsx`)
+
+- **Cambio:** `backend/package.json` pasa de `"xlsx": "^0.18.5"` (npm) a `"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"`. 0.20.3 es la última versión publicada por SheetJS. El lockfile registra el hash `sha512` del tarball, por lo que una modificación del archivo en el CDN haría fallar la instalación.
+- **Comando:** `pnpm --filter ./backend add https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`
+- **Compatibilidad:** la API usada (`XLSX.read`, `XLSX.utils.sheet_to_json`) no cambió. Se verificó procesando el Excel real de datos.go.cr: 8 filas leídas, con la misma estructura (modalidad × año).
+- **Verificación:** `pnpm test` (82/82), `pnpm build` y `docker compose build backend` correctos.
+
+**Falso positivo en OSV-Scanner.** Tras actualizar, OSV seguía reportando `xlsx@0.20.3`. Los avisos GHSA-4r6h-8v6p-xvw6 y GHSA-5pgg-2g8v-p4x9 marcan como afectadas *todas* las versiones de npm (`introduced: 0`, sin versión corregida), porque el parche nunca se publicó en npm. `pnpm audit` sí reconoce la corrección (`>=0.19.3` y `>=0.20.2`). Se agregó `osv-scanner.toml` en la raíz con ambas excepciones, cada una justificada y con vencimiento el 2027-05-10 para obligar a revisarlas.
+
+| Métrica | Antes | Después |
+| :--- | :--- | :--- |
+| OSV-Scanner (paquetes / vulnerabilidades) | 16 / 64 | 15 / 62 |
+| `pnpm audit` total | 64 | 62 |
+| `pnpm audit --prod` | 14 (1 crítica, 10 altas) | 12 (1 crítica, 8 altas) |
+
+Evidencia: `docs/evidencias/scans-2026-11-10/osv-scanner-post-r1.json` y `pnpm-audit-prod-post-r1.json`.
+
+## 8. Cómo reproducir
 
 Requiere Docker Desktop encendido y ejecutar desde la raíz del repo.
 
