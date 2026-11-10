@@ -37,3 +37,5 @@ operations:
   archive:
     guidance:
       - Resumir el resultado del archive antes de cerrar
+githubCopilot:
+  cloudAgent: true

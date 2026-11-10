@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ficha } from './ficha-radar';
 
 test.describe('Radar Cantonal — Flujo principal', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,6 +20,17 @@ test.describe('Radar Cantonal — Flujo principal', () => {
   });
 
   test('carga ficha al seleccionar un cantón', async ({ page }) => {
+    // API simulada: en CI no hay backend ni base de datos.
+    await page.route('**/api/cantones', (route) =>
+      route.fulfill({
+        json: [{ codigo: '101', nombre: 'San José', provincia: 'San José' }],
+      }),
+    );
+    await page.route('**/api/radar/canton/**', (route) =>
+      route.fulfill({ json: ficha }),
+    );
+    await page.reload();
+
     const select = page.getByRole('combobox', { name: 'Cantón' });
     await select.waitFor({ state: 'visible' });
 
