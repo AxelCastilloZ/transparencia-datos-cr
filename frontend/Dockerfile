@@ -13,6 +13,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY frontend/ frontend/
+# frontend/src/api.ts importa los tipos compartidos del radar desde el backend
+COPY backend/src/radar/radar.types.ts backend/src/radar/
 RUN pnpm --dir frontend run build
 
 FROM nginx:stable-alpine AS production
