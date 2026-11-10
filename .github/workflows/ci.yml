@@ -132,7 +132,7 @@ jobs:
           load: true
           tags: transparencia-cr-frontend:ci
 
-            - name: Escaneo Trivy — backend
+      - name: Escaneo Trivy — backend
         id: trivy_backend
         uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
