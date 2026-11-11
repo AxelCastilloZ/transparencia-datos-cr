@@ -1,0 +1,311 @@
+{
+  "advisories": {
+    "1193790": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1193790,
+      "title": "multer vulnerable to Denial of Service via crafted multipart field names",
+      "module_name": "multer",
+      "vulnerable_versions": "<2.3.0",
+      "patched_versions": ">=2.3.0",
+      "severity": "high",
+      "cwe": "CWE-248",
+      "github_advisory_id": "GHSA-wc9g-mqfw-jrwm",
+      "url": "https://github.com/advisories/GHSA-wc9g-mqfw-jrwm"
+    },
+    "1193791": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1193791,
+      "title": "multer vulnerable to Denial of Service via file descriptor leak on aborted uploads",
+      "module_name": "multer",
+      "vulnerable_versions": "=2.2.0",
+      "severity": "high",
+      "cwe": "CWE-400, CWE-459",
+      "github_advisory_id": "GHSA-qfvm-cv95-jqjf",
+      "url": "https://github.com/advisories/GHSA-qfvm-cv95-jqjf"
+    },
+    "1193792": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1193792,
+      "title": "multer vulnerable to file size limit bypass via async fileFilter race condition",
+      "module_name": "multer",
+      "vulnerable_versions": "<2.3.0",
+      "patched_versions": ">=2.3.0",
+      "severity": "low",
+      "cwe": "CWE-362",
+      "github_advisory_id": "GHSA-qvfw-j98x-7q72",
+      "url": "https://github.com/advisories/GHSA-qvfw-j98x-7q72"
+    },
+    "1193793": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1193793,
+      "title": "multer vulnerable to Denial of Service via oversized array index in field names",
+      "module_name": "multer",
+      "vulnerable_versions": "<2.3.0",
+      "patched_versions": ">=2.3.0",
+      "severity": "high",
+      "cwe": "CWE-400",
+      "github_advisory_id": "GHSA-535w-7cp7-47q4",
+      "url": "https://github.com/advisories/GHSA-535w-7cp7-47q4"
+    },
+    "1239935": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1239935,
+      "title": "multer vulnerable to Denial of Service via orphaned disk writes on aborted uploads",
+      "module_name": "multer",
+      "vulnerable_versions": ">=2.2.0 <2.4.0",
+      "patched_versions": ">=2.4.0",
+      "severity": "moderate",
+      "cwe": "CWE-400, CWE-459",
+      "github_advisory_id": "GHSA-3pph-fpjx-jg34",
+      "url": "https://github.com/advisories/GHSA-3pph-fpjx-jg34"
+    },
+    "1241210": {
+      "findings": [
+        {
+          "version": "2.0.7",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>express>proxy-addr",
+            "backend>@nestjs/platform-express>express>proxy-addr",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>express>proxy-addr",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>express>proxy-addr"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1241210,
+      "title": "proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet",
+      "module_name": "proxy-addr",
+      "vulnerable_versions": ">=1.1.0 <2.0.8",
+      "patched_versions": ">=2.0.8",
+      "severity": "critical",
+      "cwe": "CWE-290, CWE-348, CWE-697",
+      "github_advisory_id": "GHSA-jqcg-44mw-7w3h",
+      "url": "https://github.com/advisories/GHSA-jqcg-44mw-7w3h"
+    },
+    "1242604": {
+      "findings": [
+        {
+          "version": "1.16.0",
+          "paths": [
+            "backend>axios>follow-redirects"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1242604,
+      "title": "follow-redirects array-form headers bypass cross-origin credential stripping",
+      "module_name": "follow-redirects",
+      "vulnerable_versions": ">=1.16.0 <1.16.1",
+      "patched_versions": ">=1.16.1",
+      "severity": "high",
+      "cwe": "CWE-200, CWE-212",
+      "github_advisory_id": "GHSA-q3jh-wrc6-jgq8",
+      "url": "https://github.com/advisories/GHSA-q3jh-wrc6-jgq8"
+    },
+    "1242605": {
+      "findings": [
+        {
+          "version": "1.16.0",
+          "paths": [
+            "backend>axios>follow-redirects"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1242605,
+      "title": "follow-redirects sensitiveHeaders regex escaping can expose credential headers",
+      "module_name": "follow-redirects",
+      "vulnerable_versions": ">=1.16.0 <1.16.1",
+      "patched_versions": ">=1.16.1",
+      "severity": "high",
+      "cwe": "CWE-185, CWE-200",
+      "github_advisory_id": "GHSA-8r9p-f939-6h3c",
+      "url": "https://github.com/advisories/GHSA-8r9p-f939-6h3c"
+    },
+    "1243074": {
+      "findings": [
+        {
+          "version": "2.3.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>express>body-parser",
+            "backend>@nestjs/platform-express>express>body-parser",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>express>body-parser",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>express>body-parser"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1243074,
+      "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+      "module_name": "body-parser",
+      "vulnerable_versions": ">=2.0.0 <2.4.0",
+      "patched_versions": ">=2.4.0",
+      "severity": "high",
+      "cwe": "CWE-248",
+      "github_advisory_id": "GHSA-27r3-jxmh-p828",
+      "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828"
+    },
+    "1243083": {
+      "findings": [
+        {
+          "version": "2.2.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/platform-express>multer",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>multer",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>multer"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1243083,
+      "title": "multer vulnerable to Denial of Service via a pending asynchronous fileFilter after request teardown",
+      "module_name": "multer",
+      "vulnerable_versions": ">=2.0.0 <2.5.0",
+      "patched_versions": ">=2.5.0",
+      "severity": "high",
+      "cwe": "CWE-248, CWE-404",
+      "github_advisory_id": "GHSA-q7qp-rjg7-q26m",
+      "url": "https://github.com/advisories/GHSA-q7qp-rjg7-q26m"
+    },
+    "1243687": {
+      "findings": [
+        {
+          "version": "6.16.0",
+          "paths": [
+            "backend>@nestjs/core>@nestjs/platform-express>express>body-parser>qs",
+            "backend>@nestjs/core>@nestjs/platform-express>express>qs",
+            "backend>@nestjs/platform-express>express>body-parser>qs",
+            "backend>@nestjs/platform-express>express>qs",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>express>body-parser>qs",
+            "backend>@nestjs/schedule>@nestjs/core>@nestjs/platform-express>express>qs",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>express>body-parser>qs",
+            "backend>@nestjs/typeorm>@nestjs/core>@nestjs/platform-express>express>qs"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1243687,
+      "title": "qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS)",
+      "module_name": "qs",
+      "vulnerable_versions": ">=6.7.0 <=6.16.0",
+      "patched_versions": ">=6.16.1",
+      "severity": "moderate",
+      "cwe": "CWE-248, CWE-704",
+      "github_advisory_id": "GHSA-6pq8-jhm2-2vcw",
+      "url": "https://github.com/advisories/GHSA-6pq8-jhm2-2vcw"
+    },
+    "1244003": {
+      "findings": [
+        {
+          "version": "1.16.0",
+          "paths": [
+            "backend>axios>follow-redirects"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1244003,
+      "title": "follow-redirects: Cross-realm sensitiveHeaders arrays are discarded and custom credentials can follow redirects",
+      "module_name": "follow-redirects",
+      "vulnerable_versions": ">=1.16.0 <=1.16.1",
+      "patched_versions": ">=1.16.2",
+      "severity": "high",
+      "cwe": "CWE-201",
+      "github_advisory_id": "GHSA-mrwp-f3q8-3g9p",
+      "url": "https://github.com/advisories/GHSA-mrwp-f3q8-3g9p"
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 2,
+      "high": 8,
+      "critical": 1
+    },
+    "dependencies": 218,
+    "devDependencies": 0,
+    "optionalDependencies": 3,
+    "totalDependencies": 221
+  }
+}

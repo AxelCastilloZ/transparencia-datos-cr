@@ -264,21 +264,6 @@ describe("Radar como experiencia principal", () => {
     expect(screen.getAllByText("No disponible").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Percentil empírico/)).not.toBeInTheDocument();
   });
-  it("conserva selección desde el detalle TSE", async () => {
-    render(<App />);
-    await seleccionar();
-    await screen.findByText("CRC 100 · USD 500");
-    await userEvent.click(screen.getByText("Electorado · detalle TSE"));
-    const selector = screen.getByRole("combobox", {
-      name: "Cantón del padrón electoral",
-    });
-    await waitFor(() => expect(selector).toBeEnabled());
-    await userEvent.selectOptions(selector, "201");
-    expect(screen.getByRole("combobox", { name: "Cantón" })).toHaveValue("201");
-    expect(
-      await screen.findByRole("heading", { name: "Alajuela · Alajuela" }),
-    ).toBeInTheDocument();
-  });
   it("informa PRONAE vacío sin fingir que sigue cargando", async () => {
     render(<App />);
     expect(

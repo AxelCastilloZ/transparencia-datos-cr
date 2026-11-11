@@ -1,0 +1,9 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  # Semgrep SAST corre en CI (GitHub Actions) — no localmente porque
+  # requiere Python <= 3.13 y Kali ship Python 3.14.
+  # Para correrlo local: pip install semgrep && semgrep --config p/ci .
