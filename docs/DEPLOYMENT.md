@@ -1,81 +1,33 @@
-# Verificación del Pipeline de Deployment
+# Verificación del pipeline de deployment
 
-**Proyecto:** Transparencia Datos CR  
-**Ítem:** 6.1 — Deployment  
-**Responsable:** Compañero 4
+Ítem 6.1 · Transparencia Datos CR · Compañero 4
 
-## 1. Objetivo
+## Activación y publicación
 
-Verificar la configuración del pipeline de deployment, la construcción de imágenes Docker y el mecanismo de publicación en GitHub Container Registry (GHCR), mediante GitHub Actions.
+El [workflow Deploy to Staging](../.github/workflows/deploy.yml) está integrado en `development`. Se activa con un push a `main`. El job `build-and-push` también comprueba que la referencia sea `refs/heads/main`.
 
-## 2. Configuración del pipeline
+1. GitHub Actions obtiene el código con permiso `contents: read`.
+2. `docker/login-action@v3` autentica en `ghcr.io` con `github.actor` y `secrets.GITHUB_TOKEN`. El workflow solicita `packages: write`.
+3. `docker/setup-buildx-action@v3` inicializa Buildx. `docker/build-push-action@v6` usa el contexto raíz y los Dockerfiles de backend y frontend con caché de GitHub Actions.
+4. `push: true` configura la publicación de cada imagen con dos etiquetas, `latest` y el SHA completo del commit. Usar la etiqueta SHA y registrar el digest para identificar qué artefacto se valida.
 
-El proyecto dispone del archivo `.github/workflows/deploy.yml`, denominado `Deploy to Staging`.
+Ambas referencias en el YAML están en minúsculas:
 
-El workflow está configurado para activarse mediante eventos `push` sobre la rama `main` y utiliza permisos `contents: read` y `packages: write`.
+- `ghcr.io/axelcastilloz/transparencia-datos-cr/backend`
+- `ghcr.io/axelcastilloz/transparencia-datos-cr/frontend`
 
-**Evidencia 01 — Configuración general**
+## Estado de la publicación y staging
 
-![Configuración del workflow](evidencias/deployment/01-configuracion-workflow.png)
+La [ejecución #38 de CI](https://github.com/AxelCastilloZ/transparencia-datos-cr/actions/runs/42916226001/job/130179585817#step:4:1) confirma que ambos Dockerfiles construyen las imágenes en CI. Esos pasos usan `push: false`. El workflow de deployment aún no estaba presente en la referencia remota `main` consultada. La publicación efectiva sigue pendiente de verificar con una ejecución de `Deploy to Staging` desde `main` y la comprobación de las dos etiquetas y sus digests en [Packages](https://github.com/AxelCastilloZ/transparencia-datos-cr/packages).
 
-## 3. Construcción y publicación de imágenes
+`deploy-staging` depende de `build-and-push` mediante `needs` y usa el entorno `staging`. Su único paso emite una notificación con las referencias y un ejemplo de Docker Compose. No hay conexión ni aplicación automática de cambios a un servidor de staging. Para un despliegue manual, el operador debe confirmar que su archivo Compose usa las imágenes de GHCR y las etiquetas previstas, y que tiene acceso a los paquetes. El equipo debe revisar los hallazgos del [escaneo de imágenes](CONTAINER_SCANNING.md) antes de autorizar una publicación.
 
-El pipeline utiliza Docker Buildx y `docker/build-push-action@v6` para construir las imágenes del backend y frontend.
+## Evidencias
 
-La publicación se encuentra configurada mediante `push: true`, utilizando etiquetas basadas en el identificador del commit y `latest`.
-
-**Evidencia 02 — Configuración de publicación**
-
-![Publicación en GHCR](evidencias/deployment/02-configuracion-ghcr.png)
-
-## 4. Verificación de construcción
-
-En la ejecución #16 de `CI & DevSecOps Pipeline` se verificó que las imágenes Docker del backend y frontend se construyeron correctamente.
-
-Este resultado confirma el funcionamiento de las construcciones en CI, pero no una publicación efectiva en GHCR.
-
-**Evidencia 03 — Construcciones exitosas**
-
-![Construcción de imágenes](evidencias/deployment/03-build-imagenes.png)
-
-## 5. Verificación de GHCR
-
-**Estado:** Pendiente de confirmar una publicación exitosa.
-
-La configuración del pipeline permite publicar imágenes en GHCR. Sin embargo, el workflow de deployment todavía no cuenta con una ejecución verificada desde la rama principal.
-
-**Evidencia 04 — Consulta de Packages**
-
-![Consulta de Packages](evidencias/deployment/04-ghcr-packages.png)
-
-Completar esta sección con el resultado de la consulta y, si corresponde, los nombres, etiquetas y fechas de las imágenes publicadas.
-
-## 6. Despliegue al entorno staging
-
-El job `deploy-staging` depende de `build-and-push` y utiliza el entorno `staging`.
-
-Actualmente incluye un paso de notificación que muestra las referencias de las imágenes e instrucciones de ejecución manual.
-
-No se identificó una instrucción que despliegue automáticamente las imágenes en un servidor.
-
-**Evidencia 05 — Configuración de staging**
-
-![Configuración de staging](evidencias/deployment/05-deploy-staging.png)
-
-## 7. Observaciones técnicas
-
-- El workflow de deployment todavía no se encuentra integrado en `main`.
-- Debe verificarse que los nombres de las imágenes cumplan el formato en minúsculas requerido por Docker.
-- La publicación real en GHCR permanece pendiente de validación.
-- El job de staging actualmente genera una notificación, pero no realiza un despliegue automático.
-- Las vulnerabilidades identificadas por Trivy en el backend requieren seguimiento antes de una publicación.
-
-## 8. Conclusión
-
-Se verificó la existencia y configuración del pipeline de deployment del proyecto Transparencia Datos CR.
-
-Las construcciones Docker del backend y frontend fueron comprobadas mediante GitHub Actions.
-
-El mecanismo de autenticación y publicación en GHCR está configurado, pero requiere una ejecución exitosa para confirmar su funcionamiento.
-
-Se documentaron las evidencias disponibles, las limitaciones identificadas y las verificaciones pendientes para completar el proceso de deployment.
+| Evidencia | Fuente |
+| --- | --- |
+| Activación, permisos y referencias | [Configuración](https://github.com/AxelCastilloZ/transparencia-datos-cr/blob/development/.github/workflows/deploy.yml#L1-L16) |
+| Autenticación y publicación configurada | [Job build-and-push](https://github.com/AxelCastilloZ/transparencia-datos-cr/blob/development/.github/workflows/deploy.yml#L17-L57) |
+| Builds backend y frontend | [Backend](https://github.com/AxelCastilloZ/transparencia-datos-cr/actions/runs/42916226001/job/130179585817#step:4:1) · [Frontend](https://github.com/AxelCastilloZ/transparencia-datos-cr/actions/runs/42916226001/job/130179585817#step:5:1) |
+| Publicación de etiquetas y digests | Pendiente de verificar en Packages |
+| Notificación de staging | [Job deploy-staging](https://github.com/AxelCastilloZ/transparencia-datos-cr/blob/development/.github/workflows/deploy.yml#L58-L73) |
